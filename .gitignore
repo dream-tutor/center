@@ -1,0 +1,29 @@
+# Local Netlify folder
+.netlify
+
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# Naver Ads API keys
+naver-ads/config.py
+
+# Claude local settings
+.claude/settings.local.json
+
+# Local working files (scripts, data, temp images)
+*.py
+!_gen_sitemap.py
+!_bump_dates.py
+!_indexnow_submit.py
+# _naver_indexing.py 는 의도적으로 ignore (쿠키 사용 비공식 도구)
+__pycache__/
+*.xlsx
+와와사진*
+_*.txt
+_*.json
+_*.ps1
+_*.html
+today_urls.txt
+.claude/worktrees/
