@@ -1,2 +1,3 @@
 User-agent: *
+Allow: /naver3e1dbd78b1c612e77a562d2e4f1ed7d1.html
 Disallow: /
