@@ -688,13 +688,17 @@
   
   @media(max-width:600px){#fee .section-inner>div[style*="grid"]{grid-template-columns:1fr!important;gap:14px!important;}}
 
-  /* 희망 과목 체크박스 — 한 줄 배치 */
-  .subject-checks{display:flex;flex-wrap:nowrap;gap:6px 10px;padding:6px 0 2px;}
-  .subject-checks label{display:inline-flex;align-items:center;gap:4px;font-size:14px;cursor:pointer;white-space:nowrap;}
-  .subject-checks input[type=checkbox]{accent-color:#3A6B56;margin:0;}
+  /* 희망 과목 — 누르면 색이 바뀌는 필 버튼 (마크업은 체크박스 그대로, CSS로만 변환) */
+  .subject-checks{display:flex;flex-wrap:nowrap;gap:6px;padding:6px 0 2px;}
+  .subject-checks label{flex:1;display:inline-flex;align-items:center;justify-content:center;padding:10px 0;border:1.5px solid #D8E4DD;border-radius:8px;background:#F4FAF7;font-size:14px;font-weight:600;color:#5A7A68;cursor:pointer;white-space:nowrap;transition:background .12s,color .12s,border-color .12s;user-select:none;}
+  .subject-checks input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;margin:0;}
+  .subject-checks label:has(input:checked){background:#3A6B56;border-color:#3A6B56;color:#fff;}
+  .subject-checks label.checked{background:#3A6B56;border-color:#3A6B56;color:#fff;}
+  @supports not (selector(:has(*))){
+    .subject-checks input[type=checkbox]{position:static;opacity:1;width:auto;height:auto;accent-color:#3A6B56;margin:0 4px 0 0;}
+  }
   @media(max-width:480px){
-    .subject-checks{gap:4px 6px;}
-    .subject-checks label{font-size:12px;gap:3px;}
+    .subject-checks label{font-size:13px;padding:9px 0;gap:0;}
   }
 
   .fee-visit{gap:8px;}
