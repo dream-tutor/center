@@ -578,12 +578,20 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=docu
   // F12 / 개발자도구·소스보기 단축키 차단
   document.addEventListener('keydown', function(e){
     var k = e.keyCode || e.which;
-    if (k === 123) { e.preventDefault(); return false; }                                      // F12
-    if (e.ctrlKey && e.shiftKey && (k === 73 || k === 74 || k === 67)) { e.preventDefault(); return false; } // Ctrl+Shift+I/J/C
-    if (e.ctrlKey && k === 85) { e.preventDefault(); return false; }                           // Ctrl+U (소스 보기)
+    if (k === 123) { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.shiftKey && (k === 73 || k === 74 || k === 67)) { e.preventDefault(); return false; }
+    if (e.ctrlKey && k === 85) { e.preventDefault(); return false; }
+  }, false);
+  // 드래그·텍스트 선택 차단 (폼 입력칸은 허용)
+  document.addEventListener('dragstart', function(e){ e.preventDefault(); });
+  document.addEventListener('selectstart', function(e){
+    var t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+    e.preventDefault();
   }, false);
 })();
 </script>
+<style>body{-webkit-user-select:none;-moz-user-select:none;user-select:none}input,textarea,select{-webkit-user-select:text;-moz-user-select:text;user-select:text}img{-webkit-user-drag:none}</style>
 <!-- WAWA_AUTO_PROTECT_END -->
 <script defer src="https://xn--hg4ba416hn0a.com/t.js" data-site="wawa"></script>
 <script>document.addEventListener("change",function(e){var t=e.target;if(t&&t.matches&&t.matches(".subject-checks input")){var l=t.closest("label");if(l)l.classList.toggle("checked",t.checked);}},true);</script>
