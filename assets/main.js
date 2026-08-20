@@ -19,6 +19,14 @@
         btn.disabled = false;
         return;
       }
+      var fsAddrEl = document.getElementById('fs-address');
+      if(fsAddrEl && !fsAddrEl.value.trim()){
+        alert('거주 주소를 입력해 주세요. 주소 검색 또는 직접 입력 모두 가능합니다.');
+        fsAddrEl.focus();
+        btn.textContent = '📋 지금 상담 신청하기';
+        btn.disabled = false;
+        return;
+      }
 
       var data = {
         지점:   document.getElementById('fs-branch').value || '미선택',
@@ -26,10 +34,10 @@
         시군구: (document.getElementById('fs-sgg').value === '_none_' ? '' : document.getElementById('fs-sgg').value) || '',
         동:     document.getElementById('fs-dong').value || '',
         이름:   document.getElementById('fs-name').value,
+        거주주소: document.getElementById('fs-address') ? document.getElementById('fs-address').value : '',
         연락처: form.querySelector('input[type=tel]').value,
         학년:   fsGradeCombined,
         과목:   fsSubjects.join(', '),
-        연락희망시간: document.getElementById('fs-consult-time') ? document.getElementById('fs-consult-time').value : '',
         신청일: new Date().toLocaleString('ko-KR'),
       유입페이지: window.location.href,
       유입페이지제목: document.title,
@@ -637,7 +645,6 @@ function submitConsultModal(e){
     동: document.getElementById('m-dong') ? document.getElementById('m-dong').value : '',
     이름: document.getElementById('m-name') ? document.getElementById('m-name').value : '',
     연락처: form.querySelector('input[type=tel]') ? form.querySelector('input[type=tel]').value : '',
-    연락희망시간: document.getElementById('m-consult-time') ? document.getElementById('m-consult-time').value : '',
     학년: mGradeCombined,
     과목: mSubjects.join(', '),
   유입페이지: window.location.href,
