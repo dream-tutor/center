@@ -462,7 +462,7 @@
       <div class="form-group" style="margin-bottom:14px;">
         <label class="form-label">학년 <span style="color:red">*</span></label>
         <div style="display:flex;gap:8px;">
-          <select class="form-select" id="fs-school" required style="flex:1;"><option value="">선택</option><option>초등학교</option><option>중학교</option><option>고등학교</option></select>
+          <select class="form-select" id="fs-school" required style="flex:1;"><option value="">선택</option><option>초등학교</option><option>중학교</option><option>고등학교</option><option>기타</option></select>
           <select class="form-select" id="fs-grade" required style="flex:1;"><option value="">학년 선택</option></select>
         </div>
         <label class="form-label" style="margin-top:14px;">학교 이름 <span style="color:#94a3b8;font-weight:400;">(선택)</span></label>
@@ -633,12 +633,14 @@ document.querySelectorAll('.reviews-filter button').forEach(function(btn){
   };
   school.addEventListener('change', function(){
     var sel = school.value;
-    grade.innerHTML = '<option value="">학년 선택</option>';
-    (GRADES[sel] || []).forEach(function(g){
+    var list = GRADES[sel] || [];
+    grade.innerHTML = '<option value="">' + (list.length ? '학년 선택' : '-') + '</option>';
+    list.forEach(function(g){
       var o = document.createElement('option');
       o.textContent = g + '학년';
       grade.appendChild(o);
     });
+    grade.disabled = !list.length;
   });
 })();
 

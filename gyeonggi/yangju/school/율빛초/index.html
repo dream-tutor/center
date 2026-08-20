@@ -206,7 +206,7 @@
       <div class="form-group" style="margin-bottom:14px;">
         <label class="form-label">학년 <span style="color:red">*</span></label>
         <div style="display:flex;gap:8px;">
-          <select class="form-select" id="fs-school" required style="flex:1;"><option value="">선택</option><option selected>초등학교</option></select>
+          <select class="form-select" id="fs-school" required style="flex:1;"><option value="">선택</option><option selected>초등학교</option><option>기타</option></select>
           <select class="form-select" id="fs-grade" required style="flex:1;"><option value="">학년 선택</option><option>1학년</option><option>2학년</option><option>3학년</option><option>4학년</option><option>5학년</option><option>6학년</option></select>
         </div>
         <label class="form-label" style="margin-top:14px;">학교 이름 <span style="color:#94a3b8;font-weight:400;">(선택)</span></label>
@@ -293,12 +293,14 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=docu
   var GRADES = {'초등학교':[1,2,3,4,5,6], '중학교':[1,2,3], '고등학교':[1,2,3]};
   s.addEventListener('change', function(){
     var sel = s.value;
-    g.innerHTML = '<option value="">학년 선택</option>';
-    (GRADES[sel]||[]).forEach(function(n){
+    var list = GRADES[sel] || [];
+    g.innerHTML = '<option value="">' + (list.length ? '학년 선택' : '-') + '</option>';
+    list.forEach(function(n){
       var o = document.createElement('option');
       o.textContent = n + '학년';
       g.appendChild(o);
     });
+    g.disabled = !list.length;
   });
 })();
 </script>

@@ -247,7 +247,7 @@
         <div style="display:flex;gap:8px;">
           <select class="form-select" id="fs-school" required style="flex:1;">
             <option value="">선택</option>
-            <option>초등학교</option><option>중학교</option><option>고등학교</option>
+            <option>초등학교</option><option>중학교</option><option>고등학교</option><option>기타</option>
           </select>
           <select class="form-select" id="fs-grade" required style="flex:1;">
             <option value="">학년 선택</option></select>
@@ -413,12 +413,14 @@ if(window.wcs) wcs_do();
   var GRADES = {'초등학교':[1,2,3,4,5,6], '중학교':[1,2,3], '고등학교':[1,2,3]};
   s.addEventListener('change', function(){
     var sel = s.value;
-    g.innerHTML = '<option value="">학년 선택</option>';
-    (GRADES[sel]||[]).forEach(function(n){
+    var list = GRADES[sel] || [];
+    g.innerHTML = '<option value="">' + (list.length ? '학년 선택' : '-') + '</option>';
+    list.forEach(function(n){
       var o = document.createElement('option');
       o.textContent = n + '학년';
       g.appendChild(o);
     });
+    g.disabled = !list.length;
   });
 })();
 </script>
