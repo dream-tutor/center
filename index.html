@@ -1175,6 +1175,9 @@ wcs_do(_nasa)
         <div class="form-group" style="margin-bottom:14px;">
           <label class="form-label">자녀 학년 <span style="color:red">*</span></label>
           <div style="display:flex;gap:8px;">
+            <input type="text" class="form-input" id="fs-schoolname" name="학교" placeholder="학교 이름 (선택)" maxlength="30" style="flex:1;">
+          </div>
+          <div style="display:flex;gap:8px;">
             <select class="form-select" id="fs-school" onchange="fsOnSchoolChange()" required style="flex:1;">
               <option value="">학교 선택</option>
               <option value="초등학교">초등학교</option>
@@ -1447,7 +1450,10 @@ wcs_do(_nasa)
       <div class="form-group" style="margin-bottom:12px;">
         <label class="form-label">자녀 학년 <span style="color:red">*</span></label>
         <div style="display:flex;gap:8px;">
-          <select class="form-select" id="m-school" onchange="mOnSchoolChange()" required style="flex:1;">
+          <input type="text" class="form-input" id="m-schoolname" name="학교" placeholder="학교 이름 (선택)" maxlength="30" style="flex:1;">
+          </div>
+          <div style="display:flex;gap:8px;">
+            <select class="form-select" id="m-school" onchange="mOnSchoolChange()" required style="flex:1;">
             <option value="">학교 선택</option>
             <option value="초등학교">초등학교</option>
             <option value="중학교">중학교</option>
@@ -1549,7 +1555,8 @@ wcs_do(_nasa)
         이름:   document.getElementById('fs-name').value,
         연락처: (function(p,v){v=String(v||'').replace(/\D/g,'');if(v.length===11)return v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7);if(v.length===10)return v.slice(0,3)+'-'+v.slice(3,6)+'-'+v.slice(6);if(v.length===8)return p+'-'+v.slice(0,4)+'-'+v.slice(4);if(v.length===7)return p+'-'+v.slice(0,3)+'-'+v.slice(3);return p+'-'+v;})((form.querySelector('select[name="연락처앞"]')||{value:'010'}).value,form.querySelector('input[type=tel]').value),
         거주주소: document.getElementById('fs-address') ? document.getElementById('fs-address').value : '',
-        학년:   fsGradeCombined,
+        학교:   (document.getElementById('fs-schoolname')||{}).value || '',
+        학년:   (function(){var sc=((document.getElementById('fs-schoolname')||{}).value||'').trim();return sc?(sc+' '+(fsGrade||fsGradeCombined)):fsGradeCombined;})(),
         과목:   fsSubjects.join(', '),
         신청일: new Date().toLocaleString('ko-KR'),
       유입페이지: window.location.href,
@@ -2190,7 +2197,8 @@ function submitConsultModal(e){
     이름: document.getElementById('m-name') ? document.getElementById('m-name').value : '',
     연락처: (function(p,v){v=String(v||'').replace(/\D/g,'');if(v.length===11)return v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7);if(v.length===10)return v.slice(0,3)+'-'+v.slice(3,6)+'-'+v.slice(6);if(v.length===8)return p+'-'+v.slice(0,4)+'-'+v.slice(4);if(v.length===7)return p+'-'+v.slice(0,3)+'-'+v.slice(3);return p+'-'+v;})((form.querySelector('select[name="연락처앞"]')||{value:'010'}).value,form.querySelector('input[type=tel]') ? form.querySelector('input[type=tel]').value : ''),
     거주주소: document.getElementById('m-address') ? document.getElementById('m-address').value : '',
-    학년: mGradeCombined,
+    학교: (document.getElementById('m-schoolname')||{}).value || '',
+    학년: (function(){var sc=((document.getElementById('m-schoolname')||{}).value||'').trim();return sc?(sc+' '+(mGrade||mGradeCombined)):mGradeCombined;})(),
     과목: mSubjects.join(', '),
   유입페이지: window.location.href,
   유입페이지제목: document.title,
