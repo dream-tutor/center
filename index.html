@@ -1173,13 +1173,10 @@ wcs_do(_nasa)
         </script>
         <!-- /WAWA_AUTO_ADDRESS_FIELD -->
         <div class="form-group" style="margin-bottom:14px;">
-          <label class="form-label">자녀 학년 <span style="color:red">*</span></label>
-          <div style="display:flex;gap:8px;">
-            <input type="text" class="form-input" id="fs-schoolname" name="학교" placeholder="학교 이름 (선택)" maxlength="30" style="flex:1;">
-          </div>
+          <label class="form-label">학년 <span style="color:red">*</span></label>
           <div style="display:flex;gap:8px;">
             <select class="form-select" id="fs-school" onchange="fsOnSchoolChange()" required style="flex:1;">
-              <option value="">학교 선택</option>
+              <option value="">선택</option>
               <option value="초등학교">초등학교</option>
               <option value="중학교">중학교</option>
               <option value="고등학교">고등학교</option>
@@ -1188,6 +1185,7 @@ wcs_do(_nasa)
               <option value="">학년 선택</option>
             </select>
           </div>
+          <input type="text" class="form-input" id="fs-schoolname" name="학교" placeholder="학교 이름 (선택)" maxlength="30" style="margin-top:8px;">
         </div>
         <div class="form-group subject-row" style="margin-bottom:18px;">
           <label class="form-label">희망 과목 <span style="color:red">*</span></label>
@@ -1448,13 +1446,10 @@ wcs_do(_nasa)
       </script>
       <!-- /WAWA_AUTO_ADDRESS_FIELD -->
       <div class="form-group" style="margin-bottom:12px;">
-        <label class="form-label">자녀 학년 <span style="color:red">*</span></label>
+        <label class="form-label">학년 <span style="color:red">*</span></label>
         <div style="display:flex;gap:8px;">
-          <input type="text" class="form-input" id="m-schoolname" name="학교" placeholder="학교 이름 (선택)" maxlength="30" style="flex:1;">
-          </div>
-          <div style="display:flex;gap:8px;">
-            <select class="form-select" id="m-school" onchange="mOnSchoolChange()" required style="flex:1;">
-            <option value="">학교 선택</option>
+          <select class="form-select" id="m-school" onchange="mOnSchoolChange()" required style="flex:1;">
+            <option value="">선택</option>
             <option value="초등학교">초등학교</option>
             <option value="중학교">중학교</option>
             <option value="고등학교">고등학교</option>
@@ -1463,6 +1458,7 @@ wcs_do(_nasa)
             <option value="">학년 선택</option>
           </select>
         </div>
+        <input type="text" class="form-input" id="m-schoolname" name="학교" placeholder="학교 이름 (선택)" maxlength="30" style="margin-top:8px;">
       </div>
       <div class="form-group subject-row" style="margin-bottom:12px;">
         <label class="form-label">희망 과목 <span style="color:red">*</span></label>
