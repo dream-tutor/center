@@ -1405,6 +1405,23 @@ wcs_do(_nasa)
       <button class="consult-modal-close" onclick="closeConsultModal()">✕</button>
     </div>
     <form id="consultModalForm" onsubmit="submitConsultModal(event)">
+      <div style="margin-bottom:12px;">
+        <label class="form-label">신청 지점 선택</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <select class="form-select" id="m-sido" onchange="mOnSido()">
+            <option value="">시도 선택</option>
+          </select>
+          <select class="form-select" id="m-sgg" onchange="mOnSgg()">
+            <option value="">시군구 선택</option>
+          </select>
+          <select class="form-select" id="m-dong" onchange="mOnDong()" disabled>
+            <option value="">동 선택</option>
+          </select>
+          <select class="form-select" id="m-branch" required disabled>
+            <option value="">지점 선택</option>
+          </select>
+        </div>
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">학생 이름 <span style="color:red">*</span></label>
@@ -1475,23 +1492,6 @@ wcs_do(_nasa)
           <label><input type="checkbox" name="m-subject" value="사회"> 사회</label>
           <label><input type="checkbox" name="m-subject" value="과학"> 과학</label>
           <label><input type="checkbox" name="m-subject" value="기타"> 기타</label>
-        </div>
-      </div>
-      <div style="margin-bottom:12px;">
-        <label class="form-label">신청 지점 선택</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <select class="form-select" id="m-sido" onchange="mOnSido()">
-            <option value="">시도 선택</option>
-          </select>
-          <select class="form-select" id="m-sgg" onchange="mOnSgg()">
-            <option value="">시군구 선택</option>
-          </select>
-          <select class="form-select" id="m-dong" onchange="mOnDong()" disabled>
-            <option value="">동 선택</option>
-          </select>
-          <select class="form-select" id="m-branch" required disabled>
-            <option value="">지점 선택</option>
-          </select>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#6b7280;margin-bottom:14px;">
@@ -1619,6 +1619,38 @@ wcs_do(_nasa)
 
 </script>
 <script src="branches.js"></script>
+<script>
+/* 지점 선택 시 해당 지점 미개설 과목 숨김 — 지점 페이지와 동일 규칙 */
+(function () {
+  var MAP = { "국어": "grade_kor", "영어": "grade_eng", "수학": "grade_math", "사회": "grade_soc", "과학": "grade_sci" };
+  function subjectsOf(name) {
+    if (!name || typeof BRANCHES === "undefined") return null;
+    var b = null;
+    for (var i = 0; i < BRANCHES.length; i++) { if (BRANCHES[i].name === name) { b = BRANCHES[i]; break; } }
+    if (!b) return null;
+    var out = [];
+    for (var k in MAP) { if (String(b[MAP[k]] || "").trim()) out.push(k); }
+    return out;
+  }
+  function bind(branchId, boxId) {
+    var sel = document.getElementById(branchId), box = document.getElementById(boxId);
+    if (!sel || !box) return;
+    function update() {
+      var subs = subjectsOf(sel.value);
+      Array.prototype.forEach.call(box.querySelectorAll("label"), function (l) {
+        var inp = l.querySelector("input"); if (!inp) return;
+        var ok = !subs || inp.value === "기타" || subs.indexOf(inp.value) > -1;
+        l.style.display = ok ? "" : "none";
+        if (!ok) inp.checked = false;
+      });
+    }
+    sel.addEventListener("change", update);
+    update();
+  }
+  bind("fs-branch", "fs-subjects");
+  bind("m-branch", "m-subjects");
+})();
+</script>
 <script>
 var _region = '전체', _district = '전체', _search = '';
 window._dong = '전체';
