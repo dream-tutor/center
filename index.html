@@ -1672,9 +1672,9 @@ function openMapModal(el) {
   }
   document.getElementById('mapBranchAddr').textContent = shortParts.join(' ');
 
-  var bbox = (lng-0.003)+','+(lat-0.003)+','+(lng+0.003)+','+(lat+0.003);
-  document.getElementById('mapIframe').src =
-    'https://www.openstreetmap.org/export/embed.html?bbox='+bbox+'&layer=mapnik&marker='+lat+'%2C'+lng;
+  // OSM 임베드는 2026-08 MapLibre GL(WebGL)로 바뀌어 WebGL 꺼진 환경에서 지도가 안 뜬다.
+  // 지점 상세와 같은 Leaflet 래스터 방식으로 그린다.
+  wawaLeafletMap(document.getElementById('mapIframe'), lat, lng);
 
   var modal = document.getElementById('mapModal');
   modal.style.display = 'flex';
@@ -1683,9 +1683,34 @@ function openMapModal(el) {
 function closeMapModal() {
   var modal = document.getElementById('mapModal');
   modal.style.display = 'none';
-  document.getElementById('mapIframe').src = '';
   document.body.style.overflow = '';
 }
+// Leaflet 지연 로드 + 지도 그리기 (모달은 열린 뒤에야 크기가 잡혀 invalidateSize 필요)
+var wawaLeafletMap = (function () {
+  var loading = false, ready = false, q = [];
+  function load() {
+    if (loading) return; loading = true;
+    var css = document.createElement('link');
+    css.rel = 'stylesheet'; css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(css);
+    var s = document.createElement('script');
+    s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s.onload = function () { ready = true; q.forEach(function (f) { f(); }); q = []; };
+    document.head.appendChild(s);
+  }
+  return function (el, lat, lng) {
+    if (!el || !isFinite(lat) || !isFinite(lng)) return;
+    function draw() {
+      if (el._lmap) { el._lmap.remove(); el._lmap = null; }
+      var m = L.map(el, { scrollWheelZoom: false }).setView([lat, lng], 16);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom: 19 }).addTo(m);
+      L.marker([lat, lng]).addTo(m);
+      el._lmap = m;
+      setTimeout(function () { m.invalidateSize(); }, 60);
+    }
+    if (ready) draw(); else { q.push(draw); load(); }
+  };
+})();
 document.addEventListener('keydown', function(e) {
   if(e.key === 'Escape') closeMapModal();
 });
@@ -2291,7 +2316,7 @@ function mOnSchoolChange(){ _populateGrades('m-school','m-grade'); }
       </div>
       <button onclick="closeMapModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#64748B;padding:4px 8px;">✕</button>
     </div>
-    <iframe id="mapIframe" src="" width="100%" height="360" style="border:none;display:block;"></iframe>
+    <div id="mapIframe" style="width:100%;height:360px;display:block;background:#e8eef0;"></div>
   </div>
 </div>
 <script>
