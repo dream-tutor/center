@@ -19,7 +19,7 @@ try:
 except Exception:
     pass
 
-SITE = "wawacenter.kr"
+SITE = "wcoachingcenter.com"
 INDEXNOW_KEY = "0ad0f5dc3cc44c6899ea15e76e773372"
 KEY_LOCATION = f"https://{SITE}/{INDEXNOW_KEY}.txt"
 SITEMAP_URL = f"https://{SITE}/sitemap.xml"
