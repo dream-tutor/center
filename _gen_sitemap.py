@@ -62,7 +62,7 @@ def get_lastmod(path):
     if os.path.isfile(full_page):
         try:
             with open(full_page, "r", encoding="utf-8", errors="replace") as fh:
-                m = re.search(r'class="page-updated"s+data-iso="(d{4}-d{2}-d{2})"', fh.read())
+                m = re.search(r'class="page-updated"\s+data-iso="(\d{4}-\d{2}-\d{2})"', fh.read())
             if m:
                 return m.group(1)
         except Exception:
