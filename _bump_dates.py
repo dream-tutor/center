@@ -85,6 +85,12 @@ def update_sitemap_lastmod():
 
 
 def main():
+    # 2026-09-30: 이 스크립트는 더 이상 돌리지 않는다. 내용 변경과 무관하게 전 페이지 data-iso 와 sitemap lastmod 를
+    # 오늘 날짜로 일괄 바꾸는데, 그것이 08-05 정책이 금지한 "가짜 신선도" 패턴이다(주 단위 회전과 같은 결과).
+    # 날짜는 실제로 고친 페이지만 손으로(또는 그 페이지의 data-iso 만) 바꾸고, sitemap 은 _gen_sitemap.py 가 data-iso 를 읽는다.
+    if "--force" not in sys.argv:
+        print("_bump_dates.py 는 2026-09-30부터 사용하지 않습니다 (일괄 날짜 갱신 = 가짜 신선도). 정말 돌리려면 --force.")
+        return
     pages = find_pages()
     print(f"Found {len(pages)} pages")
     counts = {"added": 0, "bumped": 0, "fresh": 0, "no-footer": 0}

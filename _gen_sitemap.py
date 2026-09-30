@@ -6,6 +6,7 @@ lastmod은 git log 기반으로 각 파일의 실제 마지막 변경일을 사�
 (Naver Yeti 등 봇이 매일 동일 lastmod로 의심하는 문제 해결).
 """
 import os
+import re
 import subprocess
 import sys
 from datetime import date
@@ -55,6 +56,17 @@ def get_lastmod(path):
     # URL 인코딩 디코딩 (한글 파일 경로 매칭용)
     rel = unquote(path).lstrip("/")
     file_rel = rel + "index.html" if rel.endswith("/") or rel == "" else rel + "/index.html"
+    # 2026-09-30: lastmod 는 페이지가 스스로 적어 둔 날짜(data-iso)와 같아야 한다 (루트 규칙 "사이트맵 lastmod = 페이지 dateModified").
+    # git 커밋일을 쓰면 문구 한 줄만 고쳐도 2,297장 lastmod 가 그날로 바뀌어 페이지 날짜와 어긋난다. data-iso 가 없는 페이지만 git 날짜로.
+    full_page = os.path.join(ROOT, file_rel)
+    if os.path.isfile(full_page):
+        try:
+            with open(full_page, "r", encoding="utf-8", errors="replace") as fh:
+                m = re.search(r'class="page-updated"s+data-iso="(d{4}-d{2}-d{2})"', fh.read())
+            if m:
+                return m.group(1)
+        except Exception:
+            pass
     if file_rel in GIT_DATES:
         return GIT_DATES[file_rel]
     # fallback: 파일 mtime
