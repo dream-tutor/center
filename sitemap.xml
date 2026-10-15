@@ -6943,12 +6943,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://wcoachingcenter.com/gyeonggi/hwaseong/hwaseongtaean/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://wcoachingcenter.com/gyeonggi/hwaseong/hyangnam/</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>weekly</changefreq>
@@ -7052,12 +7046,6 @@
   </url>
   <url>
     <loc>https://wcoachingcenter.com/gyeonggi/hwaseong/school/%EC%84%B8%EC%A0%95%EC%A4%91/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://wcoachingcenter.com/gyeonggi/hwaseong/school/%EC%86%A1%ED%99%94%EC%B4%88/</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -12655,12 +12643,6 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://wcoachingcenter.com/seoul/mapo/dong/%EC%97%BC%EB%A6%AC%EB%8F%99/science/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
     <loc>https://wcoachingcenter.com/seoul/mapo/dong/%EC%97%BC%EB%A6%AC%EB%8F%99/social/</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
@@ -12695,12 +12677,6 @@
     <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://wcoachingcenter.com/seoul/mapo/mapo/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://wcoachingcenter.com/seoul/mapo/mapo2ho/</loc>
@@ -12794,12 +12770,6 @@
   </url>
   <url>
     <loc>https://wcoachingcenter.com/seoul/mapo/school/%EC%88%AD%EB%AC%B8%EA%B3%A0/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://wcoachingcenter.com/seoul/mapo/school/%EC%88%AD%EB%AC%B8%EC%A4%91/</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
