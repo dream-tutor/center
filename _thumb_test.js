@@ -51,7 +51,8 @@ function readFacts(p) {
   const html = fs.readFileSync(path.join(ROOT, p.rel, 'index.html'), 'utf8');
   const title = (html.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
   const branch = (title.match(/와와학습코칭센터\s+(\S+점)\s*$/) || [])[1] || '';
-  const src = BRANCHES[branch];
+  // 이름이 바뀐 지점은 기준본 aliases 로 찾는다(2026-10-27 마포2호점 → 마포점)
+  const src = BRANCHES[branch] || Object.values(BRANCHES).find((b) => (b.aliases || []).includes(branch));
   const pageLine = (html.match(/<div class="info-label">수강 가능 과목<\/div>\s*<div class="info-value">([^<]*)<\/div>/) || [])[1] || '';
   const pageSubj = SUBJ_ORDER.filter((s) => pageLine.includes(s));
   const subjects = src ? SUBJ_ORDER.filter((s) => (src.subjects || []).includes(s) && (!pageSubj.length || pageSubj.includes(s))) : [];
@@ -119,10 +120,17 @@ function apply(repo) {
     const f = path.join(repo, t.rel, 'index.html');
     if (!fs.existsSync(f)) { miss.push(t.rel + ' (파일 없음)'); continue; }
     let html = fs.readFileSync(f, 'utf8');
-    if (html.includes('assets/banner/')) continue; // 이미 적용됨(다시 돌려도 그대로)
     // 한글 파일 이름은 퍼센트 인코딩해서 넣는다 — GitHub Pages 는 인코딩 안 된 UTF-8 경로 요청에 400 을 준다(배포 전 검수에서 실측)
     const url = encodeURI(`${DOMAIN}/${t.banner}`);
     const img = `<img src="${url}" alt="${t.text.alt}" width="800" height="800" loading="lazy" style="width:100%;max-width:420px;border-radius:14px;display:block;margin:0 auto;">`;
+    if (html.includes('assets/banner/')) {
+      // 이미 적용된 페이지는 배너 img 한 줄만 새 alt 로 바꾼다(기준본 과목·학년이 바뀌어 다시 돌릴 때 — 2026-10-27 지점 데이터 갱신 뒤 7장)
+      const re = new RegExp(`<img src="${url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>`);
+      if (!re.test(html)) { miss.push(t.rel + ' (배너 줄 못 찾음)'); continue; }
+      const next = html.replace(re, img);
+      if (next !== html) { fs.writeFileSync(f, next, 'utf8'); n++; }
+      continue;
+    }
     const before = html;
     html = html.replace(/(<!-- WAWA_ILLUST_START -->[\s\S]*?)<img [^>]*>([\s\S]*?<!-- WAWA_ILLUST_END -->)/, `$1${img}$2`);
     html = html.replace(/<meta property="og:image" content="[^"]*">/, `<meta property="og:image" content="${url}">\n<meta property="og:image:width" content="800">\n<meta property="og:image:height" content="800">`);
