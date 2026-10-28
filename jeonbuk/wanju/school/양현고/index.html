@@ -174,8 +174,8 @@
       <input type="hidden" name="시군구" value="완주군">
       <input type="hidden" name="동" value="이서면">
       <div class="form-row">
-        <div class="form-group"><label class="form-label">학생 이름 <span style="color:red">*</span></label><input type="text" class="form-input" name="이름" required></div>
-        <div class="form-group"><label class="form-label">연락처 <span style="color:red">*</span></label><div style="display:flex;gap:6px"><select class="form-input" name="연락처앞" style="flex:0 0 44px;appearance:none;-webkit-appearance:none;text-align:center;text-align-last:center;padding:0"><option value="010" selected>010</option><option value="011">011</option><option value="016">016</option><option value="017">017</option><option value="018">018</option><option value="019">019</option></select><input type="tel" class="form-input" name="연락처" placeholder="1234-5678" required style="flex:1;min-width:0"></div></div>
+        <div class="form-group"><label class="form-label">학생 이름 <span style="color:red">*</span></label><div style="display:flex;gap:6px"><input type="text" class="form-input" name="이름" required style="flex:1;min-width:0"><select class="form-input" name="성별" aria-label="성별" style="flex:0 0 52px;appearance:none;-webkit-appearance:none;text-align:center;text-align-last:center;padding:0"><option value="">성별</option><option value="남">남</option><option value="여">여</option></select></div></div>
+        <div class="form-group"><label class="form-label">학부모 연락처 <span style="color:red">*</span></label><div style="display:flex;gap:6px"><select class="form-input" name="연락처앞" style="flex:0 0 44px;appearance:none;-webkit-appearance:none;text-align:center;text-align-last:center;padding:0"><option value="010" selected>010</option><option value="011">011</option><option value="016">016</option><option value="017">017</option><option value="018">018</option><option value="019">019</option></select><input type="tel" class="form-input" name="연락처" placeholder="1234-5678" required style="flex:1;min-width:0"></div></div>
       </div>
       <!-- WAWA_AUTO_ADDRESS_FIELD -->
       <div class="form-group" style="margin-bottom:14px;">
@@ -238,7 +238,7 @@
       <details class="agree-detail" style="margin:-8px 0 14px;font-size:12px;color:#64748B;line-height:1.6;text-align:left;">
         <summary style="cursor:pointer;color:#0369A1;font-weight:700;">수집 항목·이용 목적·보유 기간 보기</summary>
         <div style="margin-top:6px;padding:10px 12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;word-break:keep-all;">
-          <b>수집 항목</b>: 학생 이름, 연락처, 거주 주소, 학년, 희망 지점·과목, 학교 이름(선택). 신청 일시와 신청한 페이지 주소도 함께 저장됩니다.<br>
+          <b>수집 항목</b>: 학생 이름, 성별(선택), 학부모 연락처, 거주 주소, 학년, 희망 지점·과목, 학교 이름(선택). 신청 일시와 신청한 페이지 주소도 함께 저장됩니다.<br>
           <b>이용 목적</b>: 상담 연락과 수업·지점 안내<br>
           <b>보관</b>: 운영자가 관리하는 구글 시트와 상담 기록에 저장합니다. 서비스 서버가 국외에 있을 수 있습니다.<br>
           <b>보유 기간</b>: 상담이 끝난 뒤 6개월 이내에 파기합니다. 법령에 보관 의무가 있으면 그 기간 동안만 보관합니다.<br>
@@ -298,6 +298,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=docu
       시군구: (form.querySelector('[name="시군구"]')||{}).value || '',
       동:     (form.querySelector('[name="동"]')||{}).value || '',
       이름:   (form.querySelector('[name="이름"]')||{}).value || '',
+      성별:   (form.querySelector('[name="성별"]')||{}).value || '',
       연락처: (function(p,v){v=String(v||'').replace(/\D/g,'');if(v.length===11)return v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7);if(v.length===10)return v.slice(0,3)+'-'+v.slice(3,6)+'-'+v.slice(6);if(v.length===8)return p+'-'+v.slice(0,4)+'-'+v.slice(4);if(v.length===7)return p+'-'+v.slice(0,3)+'-'+v.slice(3);return p+'-'+v;})(((form.querySelector('[name="연락처앞"]')||{}).value||'010'),(form.querySelector('[name="연락처"]')||{}).value),
       거주주소: (form.querySelector('[name="거주주소"]')||{}).value || '',
       학교:   (form.querySelector('[name="학교"]')||{}).value || '',
