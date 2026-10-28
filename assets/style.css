@@ -636,15 +636,14 @@
   
   @media(max-width:600px){#fee .section-inner>div[style*="grid"]{grid-template-columns:1fr!important;gap:14px!important;}}
 
-  /* 희망 과목 — 누르면 색이 바뀌는 필 버튼 (마크업은 체크박스 그대로, CSS로만 변환) */
-  .subject-checks{display:flex;flex-wrap:nowrap;gap:6px;padding:6px 0 2px;}
-  .subject-checks label{flex:1;display:inline-flex;align-items:center;justify-content:center;padding:10px 0;border:1.5px solid #D8E4DD;border-radius:8px;background:#F4FAF7;font-size:14px;font-weight:600;color:#5A7A68;cursor:pointer;white-space:nowrap;transition:background .12s,color .12s,border-color .12s;user-select:none;}
-  .subject-checks input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;margin:0;}
-  .subject-checks label:has(input:checked){background:#3A6B56;border-color:#3A6B56;color:#fff;}
+  /* 희망 과목 — 누르면 색이 바뀌는 버튼 (2026-10-28 사장님 "체크표시 말고 버튼식으로"). 마크업은 체크박스 그대로 — t.js 가 name="과목" 체크박스를 읽어 문의 초안에 과목을 싣는다.
+     네모는 숨기고 라벨 전체가 버튼. 선택 표시는 change 때 JS(각 페이지 끝 토글 스크립트)가 label 에 .checked 를 넣고 뺀다 — :has() 는 쓰지 않는다(미지원 브라우저에서 네모가 다시 보이던 @supports 규칙도 뺌). */
+  .subject-checks{display:flex;gap:6px;flex-wrap:wrap;padding:6px 0 2px;}
+  .subject-checks label{position:relative;flex:1 1 auto;min-width:56px;display:inline-flex;align-items:center;justify-content:center;padding:9px 0;border:1.5px solid #D8E4DD;border-radius:8px;background:#F4FAF7;font-size:14px;font-weight:600;color:#5A7A68;cursor:pointer;white-space:nowrap;transition:background .12s,color .12s,border-color .12s;}
+  .subject-checks input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;margin:0;pointer-events:none;}
   .subject-checks label.checked{background:#3A6B56;border-color:#3A6B56;color:#fff;}
-  @supports not (selector(:has(*))){
-    .subject-checks input[type=checkbox]{position:static;opacity:1;width:auto;height:auto;accent-color:#3A6B56;margin:0 4px 0 0;}
-  }
+  .subject-checks label.off{opacity:.45;text-decoration:line-through;cursor:not-allowed;}
+  .subject-checks label:focus-within{outline:2px solid #3A6B56;outline-offset:1px;}
   @media(max-width:480px){
     .subject-checks label{font-size:13px;padding:9px 0;}
   }
