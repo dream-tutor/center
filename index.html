@@ -1722,7 +1722,7 @@ wcs_do(_nasa)
         var inp = l.querySelector("input"); if (!inp) return;
         var ok = !subs || subs.indexOf(inp.value) > -1;
         l.style.display = ok ? "" : "none";
-        if (!ok) inp.checked = false;
+        if (!ok) { inp.checked = false; l.classList.remove("checked"); } /* 숨기는 과목은 눌린 표시(.checked)도 지운다 */
       });
     }
     sel.addEventListener("change", update);
