@@ -1140,7 +1140,7 @@ wcs_do(_nasa)
         <div class="form-group" style="margin-bottom:14px;">
           <label class="form-label">거주 주소 <span style="color:red">*</span></label>
           <div style="display:flex;gap:8px;align-items:stretch;">
-            <input type="text" class="form-input" id="fs-address" name="거주주소" required placeholder="주소 검색 또는 직접 입력" style="flex:1;">
+            <input type="text" class="form-input" id="fs-address" name="거주주소" required placeholder="눌러서 주소 검색" style="flex:1;">
             <button type="button" onclick="wawaSearchAddress(this)" style="flex:0 0 auto;background:#0EA5E9;color:#fff;border:none;padding:0 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;white-space:nowrap;">🔍 주소 검색</button>
           </div>
           <p style="font-size:11px;color:#94a3b8;margin-top:4px;line-height:1.5;">* 도로명 주소까지만 입력해주세요</p>
@@ -1492,7 +1492,7 @@ wcs_do(_nasa)
       <div class="form-group" style="margin-bottom:12px;">
         <label class="form-label">거주 주소 <span style="color:red">*</span></label>
         <div style="display:flex;gap:8px;align-items:stretch;">
-          <input type="text" class="form-input" id="m-address" name="거주주소" required placeholder="주소 검색 또는 직접 입력" style="flex:1;">
+          <input type="text" class="form-input" id="m-address" name="거주주소" required placeholder="눌러서 주소 검색" style="flex:1;">
           <button type="button" onclick="wawaSearchAddress(this)" style="flex:0 0 auto;background:#0EA5E9;color:#fff;border:none;padding:0 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;white-space:nowrap;">🔍 주소 검색</button>
         </div>
         <p style="font-size:11px;color:#94a3b8;margin-top:4px;line-height:1.5;">* 도로명 주소까지만 입력해주세요</p>
@@ -1523,6 +1523,51 @@ wcs_do(_nasa)
       };
       </script>
       <!-- /WAWA_AUTO_ADDRESS_FIELD -->
+      <script>
+      /* 주소 칸을 누르면 바로 주소 검색 (2026-11-06 사장님 "주소 빈칸 누르면 도로명주소 검색").
+         새 창(.open) 대신 화면 안 창(embed)으로 연다 — 인앱 브라우저 팝업 차단 대비, 다른 와와 4곳(wstudy·와와센터·가이드·레슨)과 같은 모양.
+         위 두 폼의 '주소 검색' 단추와 제출 때 빈 주소 검사도 이 함수(wawaSearchAddress)를 부른다.
+         휴대폰 글자판이 먼저 뜨지 않게 칸에 inputmode none(스크립트가 붙임 — 스크립트가 안 돌면 보통 칸).
+         ×·바깥을 눌러 닫거나 검색을 못 불러오면 그때부터 손으로 적는다. 칸은 readonly 로 막지 않는다(전 사이트 규칙 — 필수 검사·직접 입력 유지). */
+      (function(){
+        var layer = null, box = null, cur = null;
+        function hand(input){ if (!input) return; input.setAttribute('data-hand', '1'); input.removeAttribute('inputmode'); input.placeholder = '주소를 직접 입력해 주세요'; input.focus(); }
+        function close(manual){ if (!layer) return; layer.style.display = 'none'; box.innerHTML = ''; var c = cur; cur = null; if (manual) hand(c); }
+        function ensure(){
+          if (layer) return;
+          layer = document.createElement('div');
+          layer.id = 'addrLayer';
+          layer.style.cssText = 'display:none;position:fixed;inset:0;z-index:3500;background:rgba(0,0,0,.45)';
+          layer.innerHTML = '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(440px,94vw);background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.25)">'
+            + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #eee"><strong style="font-size:15px">도로명 주소 검색</strong>'
+            + '<button type="button" id="addrClose" aria-label="닫고 직접 적기" style="border:0;background:none;font-size:22px;line-height:1;cursor:pointer;color:#666">&times;</button></div>'
+            + '<div id="addrBox" style="width:100%;height:440px"></div></div>';
+          document.body.appendChild(layer);
+          box = layer.querySelector('#addrBox');
+          layer.querySelector('#addrClose').addEventListener('click', function(){ close(true); });
+          layer.addEventListener('click', function(e){ if (e.target === layer) close(true); });
+        }
+        function search(input){
+          if (!input) return;
+          function go(){
+            ensure(); cur = input; box.innerHTML = ''; layer.style.display = 'block';
+            new daum.Postcode({ oncomplete: function(d){ input.value = d.roadAddress || d.address || ''; close(false); }, width: '100%', height: '100%' }).embed(box);
+          }
+          if (window.daum && window.daum.Postcode) { go(); return; }
+          var s = document.createElement('script');
+          s.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+          s.onload = go;
+          s.onerror = function(){ alert('주소 검색을 불러오지 못했습니다. 주소를 직접 입력해 주세요.'); hand(input); };
+          document.head.appendChild(s);
+        }
+        window.wawaSearchAddress = function(btn){ var w = btn && btn.parentElement; search(w ? w.querySelector('input[type="text"]') : null); };
+        ['fs-address', 'm-address'].forEach(function(id){
+          var a = document.getElementById(id); if (!a) return;
+          a.setAttribute('inputmode', 'none');
+          a.addEventListener('click', function(){ if (a.getAttribute('data-hand') || (layer && layer.style.display === 'block')) return; a.blur(); search(a); });
+        });
+      })();
+      </script>
       <div class="form-group" style="margin-bottom:12px;">
         <label class="form-label">학년 <span style="color:red">*</span></label>
         <div style="display:flex;gap:8px;">
