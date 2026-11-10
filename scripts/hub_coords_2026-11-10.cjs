@@ -7,6 +7,7 @@
 // 값은 기준본(wstudycenter.com/data/branches.json)에서 읽는다. 좌표 값으로 일괄 치환하지 않는다 — 같은 옛 값이
 // 동탄호수점·산척동(3m 차)·둔산점(W+) 페이지에서는 맞는 값이라, 파일과 지점을 정해 고친다.
 // 바뀐 페이지만 page-updated(data-iso·최종 업데이트)와 sitemap.xml lastmod 를 오늘로 올린다.
+// 같은 결함이 남은 다른 허브 18장(지점 칸 19개)의 주소 글자·JSON-LD 주소는 scripts/hub_addr_2026-11-10.cjs 가 고친다.
 // 사용: node scripts/hub_coords_2026-11-10.cjs [--write]
 'use strict';
 const fs = require('fs');
