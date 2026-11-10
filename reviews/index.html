@@ -478,6 +478,17 @@ function _rBuildSgg(filterRegion){
       if (pairs.indexOf(key) < 0) pairs.push(key);
     }
   }
+  // 시군구 없는 시도(세종) → '(시군구 없음)' 으로 동 선택까지 이어지게(홈 폼과 같은 방식)
+  if (filterRegion && pairs.length === 0){
+    var noneOpt = document.createElement('option');
+    noneOpt.value = '_none_';
+    noneOpt.dataset.region = filterRegion;
+    noneOpt.textContent = '(시군구 없음)';
+    noneOpt.selected = true;
+    sgg.appendChild(noneOpt);
+    sgg.disabled = false;
+    return;
+  }
   pairs.sort(function(a,b){
     var pa = a.split('|'), pb = b.split('|');
     return pa[0].localeCompare(pb[0],'ko') || pa[1].localeCompare(pb[1],'ko');
@@ -517,6 +528,7 @@ function rOnSido(){
   br.innerHTML = '<option value="">지점 선택</option>';
   dong.disabled = true; br.disabled = true;
   _rBuildSgg(r || null);
+  if (document.getElementById('r-sgg').value === '_none_') rOnSgg();
 }
 function rOnSgg(){
   var sggSel = document.getElementById('r-sgg');
@@ -530,10 +542,12 @@ function rOnSgg(){
   var selected = sggSel.options[sggSel.selectedIndex];
   var r = (selected && selected.dataset.region) || document.getElementById('r-sido').value;
   if (r) document.getElementById('r-sido').value = r;
+  var skipDist = (d === '_none_');
   var dongs = [];
   for (var i = 0; i < BRANCHES.length; i++){
     var b = BRANCHES[i];
-    if (b.region === r && b.district === d && b.dong && dongs.indexOf(b.dong) < 0) dongs.push(b.dong);
+    var matchDist = skipDist ? !b.district : (b.district === d);
+    if (b.region === r && matchDist && b.dong && dongs.indexOf(b.dong) < 0) dongs.push(b.dong);
   }
   dongs.sort(function(a,b){return a.localeCompare(b,'ko');});
   for (var i = 0; i < dongs.length; i++){
@@ -552,9 +566,11 @@ function rOnDong(){
   br.innerHTML = '<option value="">지점 선택</option>';
   if (!g){ br.disabled = true; return; }
   var list = [];
+  var skipDist = (d === '_none_' || d === '');
   for (var i = 0; i < BRANCHES.length; i++){
     var b = BRANCHES[i];
-    if (b.region === r && b.district === d && b.dong === g) list.push(b);
+    var matchDist = skipDist ? !b.district : (b.district === d);
+    if (b.region === r && matchDist && b.dong === g) list.push(b);
   }
   list.sort(function(a,b){return a.name.localeCompare(b.name,'ko');});
   for (var i = 0; i < list.length; i++){
@@ -625,6 +641,7 @@ document.querySelectorAll('.reviews-filter button').forEach(function(btn){
     }
     var rSido = (document.getElementById('r-sido')||{}).value || '';
     var rSgg = (document.getElementById('r-sgg')||{}).value || '';
+    if (rSgg === '_none_') rSgg = '';
     var rDong = (document.getElementById('r-dong')||{}).value || '';
     var rBranch = (document.getElementById('r-branch')||{}).value || '';
     if (!rBranch){
