@@ -4,6 +4,7 @@
 //   가리키고, 같은 페이지의 지도·카카오맵 길찾기와 지점 페이지(JSON-LD·위치 안내)만 기준본과 맞았다.
 //   예: 노형동 '과원북4길 39 보성빌딩'(08-31 이전 전 주소, 기준본 27), 오산동 '운암로 35 한진프라자'(기준본 성호대로 121),
 //   화정동·풍덕천동·송도동은 화정점·수지점·송도점 칸에 같은 동 W+ 지점의 위치 안내·주소가 들어가 있었다.
+//   허브 JSON-LD 를 따로 대조해 마곡동 허브 내발산점(칸은 맞고 JSON-LD 만 '강서로 330 동아빌딩')도 더했다.
 // 값은 기준본(wstudycenter.com/data/branches.json)에서 읽고, 파일·지점을 정해 고친다(주소 값으로 일괄 치환하지 않는다 —
 //   길주로 219·화중로 32-31·진산로 106·해돋이로 160-6 은 같은 페이지 W+ 지점에서는 맞는 주소다).
 //   - 일반 칸: 기준본 주소(끝의 학원 이름 뺌) / 📌 꼴 칸: 지점 페이지 '📌 …<br>주소' 위치 안내 그대로
@@ -43,6 +44,8 @@ const CELLS = [
   ['gyeonggi/goyang/dong/화정동', '화정점'],     // 📌 칸 — 화정점(W+) 위치 안내가 들어가 있었다
   ['gyeonggi/yongin/dong/풍덕천동', '수지점'],   // 📌 칸 — 수지점(W+)
   ['incheon/yeonsu/dong/송도동', '송도점'],      // 📌 칸 — 송도점(W+)
+  // 칸(📌 …마곡중앙4로 74)은 맞고 JSON-LD 만 옛 주소(강서로 330 동아빌딩) — JSON-LD 대조로 찾음, 칸은 그대로 둔다
+  ['seoul/gangseo/dong/마곡동', '내발산점', 'JSON-LD만'],
 ];
 
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -60,16 +63,16 @@ const pagePath = b => path.join(ROOT, b.region_slug, b.district_slug, b.branch_s
 const shortAddr = a => a.replace(/\s*(와와학습코칭학원|와와학습코칭센터|모두오름학습코칭학원)$/, '');
 
 const byHub = new Map();
-for (const [rel, name] of CELLS) {
+for (const [rel, name, only] of CELLS) {
   if (!byHub.has(rel)) byHub.set(rel, []);
-  byHub.get(rel).push(name);
+  byHub.get(rel).push([name, only === 'JSON-LD만']);
 }
 const out = [];
 for (const [rel, names] of byHub) {
   const f = path.join(ROOT, rel, 'index.html');
   const orig = fs.readFileSync(f, 'utf8'); let h = orig;
   const notes = [];
-  for (const name of names) {
+  for (const [name, ldOnly] of names) {
     const b = base[name] || fail('기준본에 없음 ' + name);
     if (`${b.region_slug}/${b.district_slug}/dong/${b.dong}` !== rel) fail(`허브와 지점 동이 다름: ${rel} ${name}`);
     // 지점 페이지가 기준본과 맞는지(맞는 쪽을 허브로 옮긴다)
@@ -82,6 +85,7 @@ for (const [rel, names] of byHub) {
       return a + b.address + z;
     }, `허브 JSON-LD 주소 ${rel} ${name}`);
     h = one(h, new RegExp('(<a href="\\.\\./\\.\\./' + esc(b.branch_slug) + '/"[^>]*>→ ' + esc(name) + ' 자세히 보기</a><br><span style="font-size:13px;color:#64748B;">)([^<]*(?:<br>[^<]*)?)(</span>)'), (x, a, c, z) => {
+      if (ldOnly) return x;
       const v = c.startsWith('📌') ? guide : shortAddr(b.address);
       if (c !== v) notes.push(`칸 ${name}: ${c} → ${v}`);
       return a + v + z;
