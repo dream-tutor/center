@@ -2,10 +2,14 @@
 // 2026-10-27 지점 소개 글(기준본 strengths, 회사 시트 '센터강점'을 다듬은 것) → 지점 페이지 '○○점 위치 안내' 제목 아래 한 문단.
 // 사장님 규칙: 코치·강사·선생님·원장·센터장 등 사람 언급 금지. 구조 자료와 어긋나는 문장(주말불가인데 주말 수업, 없는 과목, 과목 수,
 // 없는 학년)은 그 문장만 뺀다. 기존 class(.section-sub)만 쓰고 새 디자인은 넣지 않는다.
+// 2026-11-10(점검 wawa-B-3): 와와 금지어를 거르지 않아 30장에 1:1·입시·선행·과외 등이 나갔다 → 금지어 문장은
+//   scripts/banned_words_2026-11-10.cjs 의 고친 문장표(REWRITES)로 바꿔 싣고, 표에 없는 금지어 문장은 뺀다.
+//   남는 문장이 없으면 있던 문단을 지운다(전에는 건너뛰어 옛 문단이 남았다).
 // 사용: node scripts/strengths_2026-10-27.cjs [--write]
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { BANNED, rewrite } = require('./banned_words_2026-11-10.cjs');
 const ROOT = path.resolve(__dirname, '..');
 const GROUP = path.resolve(ROOT, '..');
 const BASE = process.env.BRANCH_SRC || path.join(GROUP, 'wstudycenter.com', 'data', 'branches.json');
@@ -23,8 +27,11 @@ function filterStrengths(b) {
   const subs = b.subjects || [];
   const grades = new Set(Object.values(b.grades_by_subject || {}).flatMap(v => v.split(',')));
   const keep = [], drop = [];
-  for (const s of sentences(b.strengths)) {
+  for (const s0 of sentences(b.strengths)) {
+    const s = rewrite(b.name, s0);
+    if (!s) continue; // 고친 문장표에서 뺀 문장
     const why = [];
+    if (BANNED.test(s)) why.push('금지어');
     if (PERSON.test(s)) why.push('사람 언급');
     if (/\d{2,4}-\d{3,4}-\d{4}/.test(s)) why.push('전화번호');
     const mentioned = SUBJ.filter(x => s.includes(x));
@@ -48,7 +55,7 @@ for (const b of Object.values(base)) {
   if (!fs.existsSync(f)) { skipped.push(`${b.name}: 페이지 없음`); continue; }
   const { keep, drop } = filterStrengths(b);
   for (const [s, why] of drop) dropped.push(`${b.name} [${why}] ${s}`);
-  if (!keep.length) { skipped.push(`${b.name}: 남는 문장 없음`); continue; }
+  if (!keep.length) skipped.push(`${b.name}: 남는 문장 없음${WRITE ? ' — 있던 문단은 지움' : ''}`);
   const raw = fs.readFileSync(f, 'utf8');
   const eol = raw.includes('\r\n') ? '\r\n' : '\n';
   // 브랜드 지점(글로리드·모두·W+)은 페이지 제목이 '수지점 위치 안내'처럼 괄호 없는 이름이다
@@ -56,7 +63,7 @@ for (const b of Object.values(base)) {
   if (!raw.includes(anchor)) { skipped.push(`${b.name}: 위치 안내 제목 없음`); continue; }
   const p = `<p class="section-sub" style="margin:4px auto 0;max-width:720px;">${escHtml(keep.join(' '))}</p>`;
   const existing = new RegExp(escRe(anchor) + '(?:\\r?\\n\\s*<p class="section-sub" style="margin:4px auto 0;max-width:720px;">[^<]*</p>)?');
-  const next = raw.replace(existing, anchor + eol + '    ' + p);
+  const next = raw.replace(existing, keep.length ? anchor + eol + '    ' + p : anchor);
   if (next !== raw) { edited++; if (WRITE) fs.writeFileSync(f, next, 'utf8'); }
 }
 function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
