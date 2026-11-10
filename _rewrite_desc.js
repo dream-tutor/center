@@ -1,5 +1,5 @@
 // 검색 결과 설명문(meta description·og:description)을 페이지에 이미 있는 사실로 다시 쓴다.
-// 사용: node desc.js [--write]   (cwd = 저장소 루트)
+// 사용: node _rewrite_desc.js [--write]   (cwd = 저장소 루트)
 const fs = require('fs'), path = require('path');
 const WRITE = process.argv.includes('--write');
 const root = process.cwd();

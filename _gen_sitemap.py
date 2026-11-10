@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """sitemap.xml 자동 생성 — 모든 페이지 포함
 
-로컬·CI 모두에서 동작 (스크립트 위치 기준).
-lastmod은 git log 기반으로 각 파일의 실제 마지막 변경일을 사용
-(Naver Yeti 등 봇이 매일 동일 lastmod로 의심하는 문제 해결).
+로컬에서 동작 (스크립트 위치 기준, 이 저장소에 CI 는 없다).
+lastmod 는 각 페이지가 적어 둔 날짜(page-updated data-iso)를 쓴다(2026-09-30 부터).
+data-iso 가 없는 페이지만 git log 의 마지막 커밋일로 채운다.
 """
 import os
 import re

@@ -1,5 +1,7 @@
 # 네이버 서치어드바이저 자동 색인 가이드
 
+> ⚠️ **사용 안 함 (2026-11-10 기록)** — 옛 도메인 wawacenter.kr 시절 안내다. 이 저장소에는 `_naver_indexing.py` 도 `.github/workflows/naver-indexing.yml` 도 없고, 아래 절차는 지금 돌지 않는다. wcoachingcenter.com 의 색인 요청은 sangsang-workers IndexNow 중앙 크론(네이버 서치어드바이저 IndexNow 경유)이 맡는다. 기록으로만 둔다.
+>
 > ⚠️  비공식 자동화 — 본인 사이트 등록만 사용하세요.
 
 ## 1단계: 쿠키 추출 (1회)

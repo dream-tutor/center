@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-IndexNow 자동 색인 요청.
-매일 KST 00:00에 GitHub Actions cron으로 실행.
+IndexNow 자동 색인 요청 — ⚠ 지금은 쓰지 않는다(손으로 한 번 돌릴 때만).
+이 저장소에는 GitHub Actions(.github)가 없어 자동으로 돌지 않는다. wcoachingcenter.com 의
+매일 IndexNow 제출은 sangsang-workers(전문과외 워커) IndexNow 중앙 크론(KST 03:00)이 맡는다.
 
 흐름:
 1. sitemap.xml fetch → URL 배열
