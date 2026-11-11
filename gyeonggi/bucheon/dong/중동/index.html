@@ -422,14 +422,31 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=docu
     유입경로: document.referrer || '직접입력'
     };
     var params = Object.keys(data).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(data[k]);}).join('&');
-    var img = new Image();
-    img.src = 'https://script.google.com/macros/s/AKfycbybsuTZMjzlp3HkkVaUX0IUFnNlSfnnN0DGThb-2BOIwZ8IyZNnMgkwoWOb_muHCEx5/exec?'+params;
-    setTimeout(function(){
-      form.style.display='none';
-      document.getElementById('consultSuccess').style.display='block';
-      if(window.wcs){var _n={};_n["cnv"]=wcs.cnv("2","1");wcs_do(_n);}
-      setTimeout(closeConsult, 2500);
-    }, 800);
+    /* 서버에 닿았을 때만 완료 화면(2026-11-11): GAS 는 응답을 못 읽지만 no-cors fetch 는 서버에 닿으면 resolve, 못 닿으면 reject 다.
+       못 닿거나 10초 안에 끝나지 않으면 버튼을 되살리고 안내한다. fetch 가 없는 브라우저만 예전처럼 이미지로 보낸다. */
+    var url = 'https://script.google.com/macros/s/AKfycbybsuTZMjzlp3HkkVaUX0IUFnNlSfnnN0DGThb-2BOIwZ8IyZNnMgkwoWOb_muHCEx5/exec?'+params, settled = false;
+    function finish(ok){
+      if(settled) return;
+      settled = true;
+      if(ok){
+        form.style.display='none';
+        document.getElementById('consultSuccess').style.display='block';
+        if(window.wcs){var _n={};_n["cnv"]=wcs.cnv("2","1");wcs_do(_n);}
+        setTimeout(closeConsult, 2500);
+      } else {
+        btn.textContent = '📋 지금 상담 신청하기';
+        btn.disabled = false;
+        alert('접수가 전달되지 않았습니다. 인터넷 연결을 확인하고 다시 보내 주세요. 급하시면 전화로 연락 주셔도 됩니다.');
+      }
+    }
+    var timer = setTimeout(function(){ finish(false); }, 10000);
+    if(window.fetch){
+      fetch(url, {mode:'no-cors', cache:'no-store'}).then(function(){ clearTimeout(timer); finish(true); }, function(){ clearTimeout(timer); finish(false); });
+    } else {
+      var img = new Image();
+      img.src = url;
+      setTimeout(function(){ clearTimeout(timer); finish(true); }, 800);
+    }
   });
 })();
 </script>
