@@ -109,14 +109,19 @@ if (DO('seohae')) {
   for (const f of walk(ROOT)) {
     if (f.startsWith(oldDir + path.sep) || f.startsWith(newDir + path.sep)) continue;
     const orig = read(f);
-    if (!orig.includes(`${OLD}/`) && !orig.includes('href="seogu/"')) continue;
     const rel = relRoot(f);
+    // href="seogu/" 는 인천 시도 페이지에서만 인천 서구다(광주·대전 시도 페이지의 같은 링크는 그 시의 서구)
+    if (!orig.includes(`${OLD}/`) && !(rel === 'incheon/index.html' && orig.includes('href="seogu/'))) continue;
     let h = orig;
     if (rel === 'incheon/index.html') {
-      h = one(h, /href="seogu\/"/, () => 'href="seohae/"', '인천 서구 전체보기');
+      let n = 0;
+      h = h.replace(/href="seogu\/(#fee)?"/g, (x, a) => { n++; return `href="seohae/${a || ''}"`; }); // 전체보기·수강료 칩
+      if (n !== 2) fail(`인천 서구 상대 링크 ${n}곳`);
       h = h.split(`${OLD}/`).join(`${NEW}/`);
       h = one(h, /<span class="d-name">서구<\/span>/, () => '<span class="d-name">서해구</span>', '인천 서구 묶음 이름');
-      let n = 0;
+      h = one(h, />서구 수강료 \(/, () => '>서해구 수강료 (', '인천 서구 수강료 칩');
+      h = one(h, /남동구, 부평구, 서구, 연수구/, () => '남동구, 부평구, 서해구, 연수구', '인천 소개 문장');
+      n = 0;
       h = h.replace(/<div class="branch-card-loc">서구 (신현동|청라동)<\/div>/g, (x, d) => { n++; return `<div class="branch-card-loc">서해구 ${d}</div>`; });
       if (n !== 2) fail(`인천 지점 카드 ${n}곳`);
       n = 0;
@@ -134,7 +139,7 @@ if (DO('seohae')) {
       h = one(h, new RegExp(esc(`<a href="/${OLD}/">서구</a>`)), () => `<a href="/${NEW}/">서해구</a>`, '지역 목록 ' + rel);
       navOnly.push(rel);
     }
-    if (h.includes(`${OLD}/`) || h.includes('href="seogu/"')) fail(`옛 주소가 남음: ${rel}`);
+    if (h.includes(`${OLD}/`) || (rel === 'incheon/index.html' && h.includes('href="seogu/'))) fail(`옛 주소가 남음: ${rel}`);
     // 인천 페이지에 남은 단독 '서구'는 '지역별 지점 안내'의 광주·대전 링크뿐이어야 한다(다른 시도 페이지의 '서구'는 광주·대전 것)
     if (rel.startsWith('incheon/')) for (const m of h.matchAll(/(?<![가-힣])서구/g)) {
       const pre = h.slice(Math.max(0, m.index - 30), m.index);
