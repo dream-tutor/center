@@ -9,6 +9,10 @@
 //   '상급 학교 입학'으로 쓴다(대구장기·다산도농·송파위례 — 11-10 검토 지적). 원문이 '대입'이라 적은 곳(동소문)은 대학 입학.
 // 이 표(REWRITES)는 strengths_2026-10-27.cjs 도 읽는다 — 그 스크립트를 다시 돌려도 같은 문장이 나오고, 표에 없는
 //   금지어 문장은 빠진다(BANNED). 기준본 문장이 바뀌면 표의 from 이 안 맞아 원문이 금지어로 빠지니 그때 표를 고칠 것.
+// 2026-11-11 사장님 "와와 원문 고쳐주세요"로 기준본 strengths 원문을 이 표의 고친 문장으로 고쳤다(wstudy 4b1fa8e3e4 —
+//   내발산만 기준본이 '맞춤 수업을 더해'로 다듬어 11-13 에 표를 기준본 문장에 맞춤). 이제 from 은 기준본에 없고 고친 문장이
+//   기준본 문장이라, 본체는 그런 항목을 건너뛴다(표는 기록과 rewrite() 안전망으로 남긴다). 화면 문단은 strengths_2026-10-27.cjs 가
+//   기준본에서 바로 만들고, 11-13 반영은 scripts/seohae_2026-11-13.cjs 가 했다.
 // 표의 네 번째 칸은 페이지에 먼저 실었던 고친 문장(그 문장이 페이지에 있으면 새 고친 문장으로 바꾼다).
 // 바뀐 페이지만 page-updated(data-iso·최종 업데이트)와 sitemap.xml lastmod 를 오늘로 올린다. 이미 고친 문장은
 //   건너뛰므로 다시 돌리면 바뀌는 페이지 0장이다.
@@ -54,7 +58,9 @@ const REWRITES = [
   ['신봉점', '과목별 수강과 전과목 관리가 모두 가능하고, 내신·입시 대비 특별반과 매주 토요일 국어 특강을 운영합니다.', '과목별 수강과 전과목 관리가 모두 가능하고, 내신·수능 대비 특별반과 매주 토요일 국어 특강을 운영합니다.'],
   ['수지점', '전문관에서 수업을 진행하며, 입시 상담도 함께 진행합니다.', '전문관에서 수업을 진행하며, 대학 입학 상담도 함께 진행합니다.'],
   ['수지점(글로리드)', '단원평가 시스템으로 학습 상황을 점검하고, 전과목 관리와 입시 상담을 진행합니다.', '단원평가 시스템으로 학습 상황을 점검하고, 전과목 관리와 대학 입학 상담을 진행합니다.'],
-  ['내발산점', '주 1회 학습코칭으로 개별 관리를 하고, 필요하면 일대일 수업을 병행해 학생에게 맞는 방식을 고릅니다.', '주 1회 학습코칭으로 개별 관리를 하고, 필요하면 밀착 수업을 병행해 학생에게 맞는 방식을 고릅니다.'],
+  // 내발산점: 11-10 화면은 '밀착 수업을 병행해'(낱말만 바꾼 꼴) — 11-11 기준본이 다듬은 문장으로 맞춤(11-13)
+  ['내발산점', '주 1회 학습코칭으로 개별 관리를 하고, 필요하면 일대일 수업을 병행해 학생에게 맞는 방식을 고릅니다.', '주 1회 학습코칭으로 개별 관리를 하고, 필요하면 맞춤 수업을 더해 학생에게 맞는 방식을 고릅니다.',
+    ['주 1회 학습코칭으로 개별 관리를 하고, 필요하면 밀착 수업을 병행해 학생에게 맞는 방식을 고릅니다.']],
   // 선행은 낱말이 아니라 뜻(다음 진도를 미리)이 광고 금지라 방학·개학 흐름만 남긴다
   ['염창점', '수학은 방학 선행 뒤 개학 후 보완 학습을 하고 시험 4주 전부터 시험 연습에 들어갑니다.', '수학은 방학 동안 학습한 내용을 개학 후 보완하고 시험 4주 전부터 시험 연습에 들어갑니다.'],
   ['동소문점', '초등에서 대입까지 이어지는 장기 로드맵으로 학습을 연계합니다.', '초등부터 대학 입학까지 내다보는 장기 로드맵으로 학습을 이어 갑니다.'],
@@ -86,9 +92,13 @@ if (require.main === module) {
   const one = (h, re, fn, what) => { let n = 0; const r = h.replace(re, (...a) => { n++; return fn(...a); }); if (n !== 1) fail(`${what}: ${n}곳`); return r; };
 
   const byName = new Map();
+  let inBase = 0;
   for (const [name, from, to, prev = []] of REWRITES) {
     const b = base[name] || fail('기준본에 없음 ' + name);
-    if (!b.strengths || !b.strengths.split(/(?<=\.)\s+/).map(s => s.trim()).includes(from)) fail(`기준본 strengths 에 없는 문장(${name}): ${from}`);
+    const ss = String(b.strengths || '').split(/(?<=\.)\s+/).map(s => s.trim());
+    // 11-11 부터: 기준본 원문이 이미 고친 문장이면 건너뛴다(화면은 strengths_2026-10-27.cjs 가 기준본에서 바로 만든다)
+    if (!ss.includes(from) && to && ss.includes(to)) { inBase++; continue; }
+    if (!ss.includes(from)) fail(`기준본 strengths 에 없는 문장(${name}): ${from}`);
     if (to && BANNED.test(to)) fail(`고친 문장에 금지어(${name}): ${to}`);
     // 고친 문장이 옛 문장을 품으면 다시 돌릴 때 또 바꾼다(옛 문장이 고친 문장을 품는 것은 괜찮다 — 옛 문장부터 찾는다)
     for (const s of [from, ...prev]) if (to && to.includes(s)) fail(`고친 문장이 옛 문장을 품음(${name}): ${s}`);
@@ -127,7 +137,7 @@ if (require.main === module) {
     const loc = DOMAIN + encodeURI(o.rel) + '/';
     xml = one(xml, new RegExp('(<loc>' + esc(loc) + '</loc>\\s*<lastmod>)\\d{4}-\\d{2}-\\d{2}(</lastmod>)'), (x, a, z) => a + TODAY + z, '사이트맵 ' + loc);
   }
-  console.log(`\n소개 문단 고칠 지점 페이지 ${out.length}장 (문장 ${REWRITES.length}개)`);
+  console.log(`\n소개 문단 고칠 지점 페이지 ${out.length}장 (문장 ${REWRITES.length}개 — 그중 기준본 원문에 이미 반영돼 건너뛴 것 ${inBase}개)`);
   if (WRITE) {
     for (const o of out) fs.writeFileSync(o.f, o.h, 'utf8');
     fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), xml, 'utf8');
