@@ -12,6 +12,7 @@
 2. `node scripts/strengths_2026-10-27.cjs` — 지점 페이지 '○○점 위치 안내' 아래 소개 문단을 기준본 strengths 에서(금지어·없는 과목·주말불가 문장은 뺀다). 날짜는 안 건드린다.
 3. `node scripts/banned_words_2026-11-10.cjs` — 소개 문단의 금지어 문장 고친 표. 2026-11-11 에 기준본 원문을 이 표의 문장으로 고친 뒤로는 바꿀 것이 0 이다(표는 기록·안전망).
 4. `node scripts/seohae_2026-11-13.cjs` — 인천 서구 → 서해구: `incheon/seogu/**` 를 `incheon/seohae/**` 로 옮기고 옛 주소는 이동 안내, 지역 목록·`branches.js`·`assets/branches.json`·`sitemap.xml`, 그리고 소개 문단이 바뀐 지점 페이지 날짜(2026-11-13). 생성기가 옛 `seogu` 주소로 페이지를 다시 만들면 이 스크립트가 다시 옮긴다.
+5. `node scripts/move_notice_query_2026-11-16.cjs` — '페이지 이동 안내' 51장이 주소 뒤 꼬리표(쿼리·해시)를 새 주소로 넘기게(`location.replace("새 주소"+location.search+location.hash)`). 옛 주소로 연결된 광고를 눌러 들어온 방문이 새 페이지에서 광고 유입으로 잡히게 하려는 것이다(2026-11-16 — 그 전엔 utm·n_media 가 이동 안내에서 떨어졌다). 이동 안내를 새로 만드는 스크립트는 처음부터 이 꼴로 쓴다(`seohae_2026-11-13.cjs` 틀은 맞춰 둠, 10-27 `branch_changes`·`mapo_flip` 틀은 옛 꼴이라 다시 돌렸다면 이 스크립트를 한 번 더).
 
 그 밖의 날짜 붙은 스크립트(`hub_coords`·`hub_subjects`·`minor_fixes`·`form_*` 등)도 생성기에 없는 고침이다. 다시 만든 뒤에는 모의로 돌려 바뀔 것이 0 인지 본다. 네이버 썸네일 시험 배너는 `node _thumb_test.js apply .`(저장소 루트의 `_thumb_test.json` 배정 그대로).
 

@@ -56,7 +56,7 @@ function bumpDate(h, what) {
 }
 const isStub = (h) => { const head = h.slice(0, 1200); return head.includes('name="robots" content="noindex"') && head.includes('http-equiv="refresh"'); };
 function stubPage(target) {
-  return `<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n<title>페이지 이동 안내</title>\n<meta name="robots" content="noindex">\n<link rel="canonical" href="${target}">\n<meta http-equiv="refresh" content="0; url=${target}">\n<script>location.replace("${target}");</script>\n</head>\n<body>\n<p>페이지 주소가 변경되었습니다. <a href="${target}">이동하기</a></p>\n</body>\n</html>\n`;
+  return `<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n<title>페이지 이동 안내</title>\n<meta name="robots" content="noindex">\n<link rel="canonical" href="${target}">\n<meta http-equiv="refresh" content="0; url=${target}">\n<script>location.replace("${target}"+location.search+location.hash);</script>\n</head>\n<body>\n<p>페이지 주소가 변경되었습니다. <a href="${target}">이동하기</a></p>\n</body>\n</html>\n`;
 }
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
