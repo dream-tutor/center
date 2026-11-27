@@ -113,7 +113,7 @@
   <div style="text-align:center;margin-bottom:16px;">
     <div class="section-tag">LOCATION</div>
     <h2 class="section-title" style="margin-bottom:6px;">신봉점 위치 안내</h2>
-    <p class="section-sub" style="margin:4px auto 0;max-width:720px;">초등 기초부터 고등 수능까지 국어·영어·수학·과학을 수업합니다. 과목별 수강과 전과목 관리가 모두 가능하고, 내신·수능 대비 특별반과 매주 토요일 국어 특강을 운영합니다.</p>
+    <p class="section-sub" style="margin:4px auto 0;max-width:720px;">국어·영어·수학·과학을 초3부터 고3 수능까지 수업합니다. 과목별 수강과 전과목 관리가 모두 가능하고, 내신·수능 대비 특별반과 매주 토요일 국어 특강을 운영합니다.</p>
   </div>
   <div class="nearby-branches"><strong>📍 용인시 다른 센터</strong><a href="../giheunggucheong/">기흥구청점</a> <a href="../dongbaeg/">동백점</a> <a href="../myeongjidaeyeog/">명지대역점</a> <a href="../bola/">보라점</a> <a href="../sanghyeon/">상현점</a> <a href="../suji/">수지점</a> <a href="../suji-wplus/">수지점(W+)</a> <a href="../suji-glory/">수지점(글로리드)</a> <a href="../yonginbaeghyeon-all/">용인백현점(모두)</a> <a href="../heungdeog/">흥덕점</a></div>
   <div class="branch-detail-grid">
@@ -368,7 +368,7 @@
 <section class="seo-content">
 <div class="seo-content-inner">
   <h2>용인시 신봉동 자기주도학습 전문, 와와학습코칭센터 신봉점</h2>
-<p><strong>와와학습코칭센터 신봉점</strong>은 경기 용인시 신봉동에 위치한 자기주도학습 전문 학원입니다. 국어 · 영어 · 수학 · 과학 · 사회 수업을 진행하며, 초등부터 고등까지 학년별 맞춤 코칭을 제공합니다. 가까운 학교는 신봉초, 신일초, 홍천초, 신리초 등입니다.</p>
+<p><strong>와와학습코칭센터 신봉점</strong>은 경기 용인시 신봉동에 위치한 자기주도학습 전문 학원입니다. 국어 · 영어 · 수학 · 과학 · 사회 수업을 진행하며, 초3부터 고3까지 학년별 맞춤 코칭을 제공합니다. 가까운 학교는 신봉초, 신일초, 홍천초, 신리초 등입니다.</p>
 </div>
 </section>
 
@@ -399,7 +399,7 @@
   <a href="/reviews/" style="color:rgba(255,255,255,0.85);font-weight:700;">⭐ 학생·학부모 후기</a> &nbsp;|&nbsp; <a href="tel:010-4864-5345" style="color:rgba(255,255,255,0.85);font-weight:700;">📞 전화 문의하기</a><br>
   <span style="font-size:11px;color:rgba(255,255,255,0.55);">광고전화는 정중히 사절합니다. &nbsp;|&nbsp; 그림 출처: 와와학습코칭센터, AI로 이미지 생성</span>
   <div class="footer-privacy" style="margin-top:6px;font-size:12px;"><a href="/privacy/" style="color:rgba(255,255,255,0.85);font-weight:700;">개인정보처리방침</a></div>
-  <div class="page-updated" data-iso="2026-11-24" style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:8px;">📅 최종 업데이트: 2026.11.24</div>
+  <div class="page-updated" data-iso="2026-11-27" style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:8px;">📅 최종 업데이트: 2026.11.27</div>
 </footer>
 <script type="text/javascript" src="//wcs.naver.net/wcslog.js"></script>
 <script type="text/javascript">
@@ -512,6 +512,34 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=docu
     });
     g.disabled = !list.length;
   });
+  /* 지점에 맞춰 학년·과목 끄기(2026-11-25): 이 폼의 지점(숨은 칸이나 고른 지점)이 열지 않는 학교급·학년은 고를 수 없게 하고,
+     고른 학년(학교급만 골랐으면 그 학교급)에 그 지점이 열지 않는 과목은 흐리게(.off) 한다. 지점이 안 정해졌으면 모두 그대로 연다.
+     이미 고른 값이 막히면 그 값만 푼다. 허용 학년은 이 폼에 단추가 있는 과목으로만 센다(고를 과목이 없는 학년을 내주지 않게).
+     GR = 지점 → 과목 → 여는 학년(초1=1 … 고3=2048). scripts/form_grade_filter_2026-11-25.cjs 가 assets/branches.json 에서 넣는다. */
+  var GR = {"신봉점":{"국어":4092,"영어":4092,"수학":4092,"사회":508,"과학":4092}};
+  var f = s.form, LV = {'초등학교':0, '중학교':6, '고등학교':9}, LM = {'초등학교':63, '중학교':448, '고등학교':3584};
+  if(!f) return;
+  function fit(){
+    var b = f.querySelector('[name="지점"]'), m = b ? GR[b.value] : null, cs = f.querySelectorAll('.subject-checks input'), all = 0, i, o, c, ok;
+    if(m) for(i = 0; i < cs.length; i++) all |= m[cs[i].value] || 0;
+    if(!all) m = null;
+    for(i = 0; i < s.options.length; i++){ o = s.options[i]; o.disabled = !!m && LM[o.value] > 0 && !(all & LM[o.value]); }
+    o = s.options[s.selectedIndex];
+    if(o && o.disabled){ s.value = ''; g.innerHTML = '<option value="">-</option>'; g.disabled = true; }
+    var lv = LV[s.value];
+    for(i = 1; i < g.options.length; i++){ o = g.options[i]; o.disabled = !!m && lv != null && !(all & (1 << (lv + parseInt(o.value, 10) - 1))); }
+    o = g.options[g.selectedIndex];
+    if(o && o.disabled) g.value = '';
+    var want = lv == null ? 4095 : g.value ? 1 << (lv + parseInt(g.value, 10) - 1) : LM[s.value];
+    for(i = 0; i < cs.length; i++){
+      c = cs[i]; ok = !m || !!((m[c.value] || 0) & want);
+      c.disabled = !ok; if(!ok) c.checked = false;
+      if(c.parentNode && c.parentNode.classList){ c.parentNode.classList.toggle('off', !ok); c.parentNode.classList.toggle('checked', c.checked); }
+    }
+  }
+  f.addEventListener('change', function(e){ if(e.target && e.target.tagName === 'SELECT') fit(); });
+  f.addEventListener('reset', function(){ setTimeout(fit, 0); });
+  fit();
 })();
 </script>
 <script>

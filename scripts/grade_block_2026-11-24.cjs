@@ -9,7 +9,10 @@
 //   ② 초등에서 여는 과목이 다섯이 아니면 초등 카드 셋째 줄을 '영어·수학 기초 탄탄히' / '두 과목을 고르게 다져 중학교 이후를 대비합니다.'
 //   맞는 페이지는 손대지 않는다. 바뀐 페이지만 page-updated(data-iso·최종 업데이트)·sitemap lastmod 를 오늘로.
 // 생성기(쌍둥이 와와 저장소의 git 밖 .py)는 옛 글을 그대로 낸다 — 페이지를 다시 만들면 이 스크립트를 다시 돌린다(scripts/_README.md).
-// 사용: node scripts/grade_block_2026-11-24.cjs [--write]   (--write 가 없으면 모의 — 바뀔 페이지 수와 문구 묶음만 보여 준다)
+// 사용: node scripts/grade_block_2026-11-24.cjs [--write] [--no-sitemap]   (--write 가 없으면 모의 — 바뀔 페이지 수와 문구 묶음만 보여 준다)
+//   --no-sitemap: 페이지만 쓰고 sitemap.xml 은 두다(사이트맵을 다른 단계에서 한꺼번에 맞출 때 — 2026-11-25 기준본 변경 반영 때 이렇게 돌렸다)
+// 2026-11-25: 기준본 이곡점 과학에서 초1 을 뺀 뒤 TODAY 를 그날로 바꿔 다시 돌렸다(자료가 바뀐 곳만 바뀜).
+// 2026-11-27: 기준본 별가람점 국어·영어에 고2 를 채운 뒤 다시 돌렸다(별가람점 1장이 '(고2 제외)' 없이 원문으로 돌아감).
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -17,7 +20,8 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const BASE = process.env.BRANCH_SRC || path.join(ROOT, '..', 'wstudycenter.com', 'data', 'branches.json');
 const WRITE = process.argv.includes('--write');
-const TODAY = '2026-11-24';
+const NO_SITEMAP = process.argv.includes('--no-sitemap');
+const TODAY = '2026-11-27'; // 11-25 에 고쳐 11-27 에 배포 — 페이지 수정일은 배포일
 const DOMAIN = 'https://wcoachingcenter.com';
 const SEQ = ['초1', '초2', '초3', '초4', '초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
 const SUBJ = ['국어', '영어', '수학', '사회', '과학']; // 카드 원문 '국·영·수·사·과' 순서
@@ -119,12 +123,12 @@ for (const loc of lastmod) {
   if (!re.test(xml)) { notInSitemap.push(loc); continue; }
   xml = one(xml, re, (m, a, z) => a + TODAY + z, '사이트맵 lastmod ' + loc);
 }
-if (writes.size) writes.set(sm, xml);
+if (writes.size && !NO_SITEMAP) writes.set(sm, xml);
 
 const depth = {};
 for (const loc of lastmod) { const n = loc.slice(DOMAIN.length).split('/').filter(Boolean).length; depth[n] = (depth[n] || 0) + 1; }
 console.log(`칸이 있는 페이지 ${seen}장(홈 ${skippedHome}장은 그대로) → 바뀔 페이지 ${lastmod.length}장 (깊이별 시도 ${depth[1] || 0} · 시군구 ${depth[2] || 0} · 지점 ${depth[3] || 0})`);
-console.log(`사이트맵 lastmod 오늘로 ${lastmod.length - notInSitemap.length}${notInSitemap.length ? ` · 사이트맵에 없음 ${notInSitemap.length}: ${notInSitemap.join(', ')}` : ''}`);
+console.log(`사이트맵 lastmod 오늘로 ${lastmod.length - notInSitemap.length}${notInSitemap.length ? ` · 사이트맵에 없음 ${notInSitemap.length}: ${notInSitemap.join(', ')}` : ''}${NO_SITEMAP ? ' (--no-sitemap: sitemap.xml 은 쓰지 않음)' : ''}`);
 if (unknown.length) console.log(`지점을 못 찾은 페이지 ${unknown.length}: ${unknown.join(', ')}`);
 console.log('\n바뀐 문구 묶음(페이지 수):');
 for (const [k, n] of [...groups].sort((a, b) => b[1] - a[1])) console.log(`  ${String(n).padStart(3)}  ${k}`);

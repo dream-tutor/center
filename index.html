@@ -1439,7 +1439,7 @@ wcs_do(_nasa)
   <span class="pc-hide-phone">대표전화: <a href="tel:010-4864-5345" style="color:rgba(255,255,255,0.6);">전화 문의하기</a><br></span>
   <span style="font-size:11px;color:rgba(255,255,255,0.4);">광고전화는 정중히 사절합니다. &nbsp;|&nbsp; 그림 출처: 와와학습코칭센터, AI로 이미지 생성</span>
   <div class="footer-privacy" style="margin-top:6px;font-size:12px;"><a href="/privacy/" style="color:rgba(255,255,255,0.85);font-weight:700;">개인정보처리방침</a></div>
-  <div class="page-updated" data-iso="2026-09-02" style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:8px;">📅 최종 업데이트: 2026.09.02</div>
+  <div class="page-updated" data-iso="2026-11-27" style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:8px;">📅 최종 업데이트: 2026.11.27</div>
 <div class="ft-region" style="margin-top:10px;font-size:12px;color:#94A3B8;line-height:1.9;word-break:keep-all;">지역별 지점 : <a href="/seoul/" style="color:#94A3B8;text-decoration:none;">서울</a> · <a href="/gyeonggi/" style="color:#94A3B8;text-decoration:none;">경기</a> · <a href="/incheon/" style="color:#94A3B8;text-decoration:none;">인천</a> · <a href="/busan/" style="color:#94A3B8;text-decoration:none;">부산</a> · <a href="/daegu/" style="color:#94A3B8;text-decoration:none;">대구</a> · <a href="/gwangju/" style="color:#94A3B8;text-decoration:none;">광주</a> · <a href="/daejeon/" style="color:#94A3B8;text-decoration:none;">대전</a> · <a href="/ulsan/" style="color:#94A3B8;text-decoration:none;">울산</a> · <a href="/sejong/" style="color:#94A3B8;text-decoration:none;">세종</a> · <a href="/gangwon/" style="color:#94A3B8;text-decoration:none;">강원</a> · <a href="/chungbuk/" style="color:#94A3B8;text-decoration:none;">충북</a> · <a href="/chungnam/" style="color:#94A3B8;text-decoration:none;">충남</a> · <a href="/jeonbuk/" style="color:#94A3B8;text-decoration:none;">전북</a> · <a href="/gyeongbuk/" style="color:#94A3B8;text-decoration:none;">경북</a> · <a href="/gyeongnam/" style="color:#94A3B8;text-decoration:none;">경남</a> · <a href="/jeju/" style="color:#94A3B8;text-decoration:none;">제주</a></div>
 </footer>
 
@@ -1760,7 +1760,10 @@ wcs_do(_nasa)
 </script>
 <script src="branches.js"></script>
 <script>
-/* 지점 선택 시 해당 지점 미개설 과목 숨김 — 지점 페이지와 동일 규칙 */
+/* 지점 선택 시 해당 지점 미개설 과목 숨김 — 지점 페이지와 동일 규칙
+   지점에 맞춰 학년·과목 끄기(2026-11-25): 고른 지점이 열지 않는 학교급·학년도 고를 수 없게 하고, 고른 학년(학교급만 골랐으면 그 학교급)에
+   그 지점이 열지 않는 과목은 흐리게(.off) 한다. 지점을 안 골랐으면 모두 그대로 연다. 이미 고른 값이 막히면 그 값만 푼다.
+   자료는 branches.js 의 grade_* 칸(scripts/form_grade_filter_2026-11-25.cjs). */
 (function () {
   var MAP = { "국어": "grade_kor", "영어": "grade_eng", "수학": "grade_math", "사회": "grade_soc", "과학": "grade_sci" };
   function subjectsOf(name) {
@@ -1772,7 +1775,41 @@ wcs_do(_nasa)
     for (var k in MAP) { if (String(b[MAP[k]] || "").trim()) out.push(k); }
     return out;
   }
-  function bind(branchId, boxId) {
+  var SEQ = ["초1", "초2", "초3", "초4", "초5", "초6", "중1", "중2", "중3", "고1", "고2", "고3"];
+  var LV = { "초등학교": 0, "중학교": 6, "고등학교": 9 }, LM = { "초등학교": 63, "중학교": 448, "고등학교": 3584 };
+  /* 과목 → 여는 학년(초1=1 … 고3=2048) */
+  function masksOf(name) {
+    if (!name || typeof BRANCHES === "undefined") return null;
+    for (var i = 0; i < BRANCHES.length; i++) {
+      if (BRANCHES[i].name !== name) continue;
+      var b = BRANCHES[i], m = {};
+      for (var k in MAP) String(b[MAP[k]] || "").split(",").forEach(function (v) { var j = SEQ.indexOf(v.trim()); if (j > -1) m[k] = (m[k] || 0) | (1 << j); });
+      return m;
+    }
+    return null;
+  }
+  /* 허용 학년은 단추가 보이는 과목으로만 센다(숨긴 과목은 0) */
+  function fitGrades(name, box, sc, gd) {
+    var m = masksOf(name), cs = box.querySelectorAll("input"), all = 0, i, o, c, ok, lv;
+    if (m) for (i = 0; i < cs.length; i++) all |= m[cs[i].value] || 0;
+    if (!all) m = null;
+    if (sc && gd) {
+      for (i = 0; i < sc.options.length; i++) { o = sc.options[i]; o.disabled = !!m && LM[o.value] > 0 && !(all & LM[o.value]); }
+      o = sc.options[sc.selectedIndex];
+      if (o && o.disabled) { sc.value = ""; gd.innerHTML = '<option value="">학년 선택</option>'; gd.disabled = true; }
+      lv = LV[sc.value];
+      for (i = 1; i < gd.options.length; i++) { o = gd.options[i]; o.disabled = !!m && lv != null && !(all & (1 << (lv + parseInt(o.value, 10) - 1))); }
+      o = gd.options[gd.selectedIndex];
+      if (o && o.disabled) gd.value = "";
+    }
+    var want = lv == null ? 4095 : gd.value ? 1 << (lv + parseInt(gd.value, 10) - 1) : LM[sc.value];
+    for (i = 0; i < cs.length; i++) {
+      c = cs[i]; ok = !m || !!((m[c.value] || 0) & want);
+      c.disabled = !ok; if (!ok) c.checked = false;
+      if (c.parentNode && c.parentNode.classList) { c.parentNode.classList.toggle("off", !ok); c.parentNode.classList.toggle("checked", c.checked); }
+    }
+  }
+  function bind(branchId, boxId, schoolId, gradeId) {
     var sel = document.getElementById(branchId), box = document.getElementById(boxId);
     if (!sel || !box) return;
     function update() {
@@ -1783,6 +1820,7 @@ wcs_do(_nasa)
         l.style.display = ok ? "" : "none";
         if (!ok) { inp.checked = false; l.classList.remove("checked"); } /* 숨기는 과목은 눌린 표시(.checked)도 지운다 */
       });
+      fitGrades(sel.value, box, document.getElementById(schoolId), document.getElementById(gradeId));
     }
     sel.addEventListener("change", update);
     /* 지점이 코드로 바뀌는 경로(동에 지점이 1곳이면 자동 선택, 시도·시군구·동을 바꿔 지점이 비는 때, 폼 reset)는
@@ -1796,8 +1834,8 @@ wcs_do(_nasa)
   var syncs = [];
   /* fbAutoSelect(지점 카드 '상담 신청')·URL 파라미터 자동 선택처럼 value 만 넣는 곳에서 부른다 */
   window.wawaSyncSubjects = function () { for (var i = 0; i < syncs.length; i++) syncs[i](); };
-  bind("fs-branch", "fs-subjects");
-  bind("m-branch", "m-subjects");
+  bind("fs-branch", "fs-subjects", "fs-school", "fs-grade");
+  bind("m-branch", "m-subjects", "m-school", "m-grade");
 })();
 </script>
 <script>
@@ -1925,7 +1963,7 @@ function wawaFilter(){
     return '<div class="bc">'
       + '<div class="bc-tag">' + tag + '</div>'
       + (b.name.indexOf('글로리드') >= 0 ? '<span class="bc-badge bc-badge-kor">📖 국어 전문</span>' : '')
-      + (b.name.indexOf('W+') >= 0 ? '<span class="bc-badge bc-badge-math">🔢 수학·과학 전문</span>' : '')
+      + (b.name.indexOf('W+') >= 0 && (b.grade_math || b.grade_sci) ? '<span class="bc-badge bc-badge-math">🔢 ' + [b.grade_math ? '수학' : '', b.grade_sci ? '과학' : ''].filter(Boolean).join('·') + ' 전문</span>' : '')
       + '<div class="bc-name">' + (b.region_en && b.district_en && b.branch_en ? '<a href="/' + b.region_en + '/' + b.district_en + '/' + b.branch_en + '/" style="color:inherit;text-decoration:none;">' + b.name + '</a>' : b.name) + ' <span class="bc-map-icon" data-name="' + b.name.replace(/"/g,"'") + '" data-addr="' + b.address.replace(/"/g,"'") + '" data-lat="' + b.lat + '" data-lng="' + b.lng + '" data-link="' + (b.link||'') + '" onclick="openMapModal(this);"><i class=\"fas fa-map-location-dot\"></i> 지도</span></div>'
       + (b.nearby && b.nearby.indexOf('/') >= 0 ? '<div class="bc-nearby">📌 ' + b.nearby.split('/').slice(1).map(function(s){return s.trim();}).filter(Boolean).join(' · ') + '</div>' : '')
       + '<div class="bc-addr">' + b.address.split(' ').reduce(function(acc,w,i){if(acc.stop)return acc;if(/^\d+[층호]$/.test(w)||(/[가-힣]+/.test(w)&&/(빌딩|타워|프라자|상가|오피스텔)$/.test(w)&&i>2)){acc.stop=true;return acc;}acc.parts.push(w);return acc;},{parts:[],stop:false}).parts.join(' ') + '</div>'

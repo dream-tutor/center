@@ -386,6 +386,34 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=docu
     });
     g.disabled = !list.length;
   });
+  /* 지점에 맞춰 학년·과목 끄기(2026-11-25): 이 폼의 지점(숨은 칸이나 고른 지점)이 열지 않는 학교급·학년은 고를 수 없게 하고,
+     고른 학년(학교급만 골랐으면 그 학교급)에 그 지점이 열지 않는 과목은 흐리게(.off) 한다. 지점이 안 정해졌으면 모두 그대로 연다.
+     이미 고른 값이 막히면 그 값만 푼다. 허용 학년은 이 폼에 단추가 있는 과목으로만 센다(고를 과목이 없는 학년을 내주지 않게).
+     GR = 지점 → 과목 → 여는 학년(초1=1 … 고3=2048). scripts/form_grade_filter_2026-11-25.cjs 가 assets/branches.json 에서 넣는다. */
+  var GR = {"미사점":{"국어":1023,"영어":1023,"수학":1023,"과학":1023}};
+  var f = s.form, LV = {'초등학교':0, '중학교':6, '고등학교':9}, LM = {'초등학교':63, '중학교':448, '고등학교':3584};
+  if(!f) return;
+  function fit(){
+    var b = f.querySelector('[name="지점"]'), m = b ? GR[b.value] : null, cs = f.querySelectorAll('.subject-checks input'), all = 0, i, o, c, ok;
+    if(m) for(i = 0; i < cs.length; i++) all |= m[cs[i].value] || 0;
+    if(!all) m = null;
+    for(i = 0; i < s.options.length; i++){ o = s.options[i]; o.disabled = !!m && LM[o.value] > 0 && !(all & LM[o.value]); }
+    o = s.options[s.selectedIndex];
+    if(o && o.disabled){ s.value = ''; g.innerHTML = '<option value="">-</option>'; g.disabled = true; }
+    var lv = LV[s.value];
+    for(i = 1; i < g.options.length; i++){ o = g.options[i]; o.disabled = !!m && lv != null && !(all & (1 << (lv + parseInt(o.value, 10) - 1))); }
+    o = g.options[g.selectedIndex];
+    if(o && o.disabled) g.value = '';
+    var want = lv == null ? 4095 : g.value ? 1 << (lv + parseInt(g.value, 10) - 1) : LM[s.value];
+    for(i = 0; i < cs.length; i++){
+      c = cs[i]; ok = !m || !!((m[c.value] || 0) & want);
+      c.disabled = !ok; if(!ok) c.checked = false;
+      if(c.parentNode && c.parentNode.classList){ c.parentNode.classList.toggle('off', !ok); c.parentNode.classList.toggle('checked', c.checked); }
+    }
+  }
+  f.addEventListener('change', function(e){ if(e.target && e.target.tagName === 'SELECT') fit(); });
+  f.addEventListener('reset', function(){ setTimeout(fit, 0); });
+  fit();
 })();
 </script>
 <script>

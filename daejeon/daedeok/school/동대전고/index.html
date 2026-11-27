@@ -120,7 +120,7 @@
 <section class="seo-content">
 <div class="seo-content-inner">
   <h2>동대전고 학생 코칭 안내</h2>
-  <p><strong>동대전고</strong>는 대전 대덕구에 위치한 고등학교입니다. 동대전고 학생이라면 와와학습코칭센터의 대덕구 지점(1곳)에서 등록받고 있으며, 국어 · 영어 · 수학 전 과목 학년별 코칭을 진행합니다.</p>
+  <p><strong>동대전고</strong>는 대전 대덕구에 위치한 고등학교입니다. 동대전고 학생이라면 와와학습코칭센터의 대덕구 지점(1곳)에서 등록받고 있으며, 국어 · 영어 · 수학 학년별 코칭을 진행합니다.</p>
   <p>송촌동 학생이 자기 공부를 스스로 챙기는 습관을 들이도록 돕습니다. 와와학습코칭센터의 코칭은 <strong>진단 · 계획 · 실행 · 점검</strong>의 단계로 운영됩니다.</p>
 </div>
 </section>
@@ -145,7 +145,7 @@
   <a href="/reviews/" style="color:rgba(255,255,255,0.85);font-weight:700;">⭐ 학생·학부모 후기</a> &nbsp;|&nbsp; <a href="tel:010-4864-5345" style="color:rgba(255,255,255,0.85);font-weight:700;">📞 전화 문의하기</a><br>
   <span style="font-size:11px;color:rgba(255,255,255,0.55);">광고전화는 정중히 사절합니다. &nbsp;|&nbsp; 그림 출처: 와와학습코칭센터, AI로 이미지 생성</span>
   <div class="footer-privacy" style="margin-top:6px;font-size:12px;"><a href="/privacy/" style="color:rgba(255,255,255,0.85);font-weight:700;">개인정보처리방침</a></div>
-  <div class="page-updated" data-iso="2026-09-02" style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:8px;">📅 최종 업데이트: 2026.09.02</div>
+  <div class="page-updated" data-iso="2026-11-27" style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:8px;">📅 최종 업데이트: 2026.11.27</div>
 </footer>
 
 <div class="phone-float" style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
@@ -347,6 +347,34 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=docu
     });
     g.disabled = !list.length;
   });
+  /* 지점에 맞춰 학년·과목 끄기(2026-11-25): 이 폼의 지점(숨은 칸이나 고른 지점)이 열지 않는 학교급·학년은 고를 수 없게 하고,
+     고른 학년(학교급만 골랐으면 그 학교급)에 그 지점이 열지 않는 과목은 흐리게(.off) 한다. 지점이 안 정해졌으면 모두 그대로 연다.
+     이미 고른 값이 막히면 그 값만 푼다. 허용 학년은 이 폼에 단추가 있는 과목으로만 센다(고를 과목이 없는 학년을 내주지 않게).
+     GR = 지점 → 과목 → 여는 학년(초1=1 … 고3=2048). scripts/form_grade_filter_2026-11-25.cjs 가 assets/branches.json 에서 넣는다. */
+  var GR = {"송촌점":{"국어":2040,"영어":2040,"수학":2040}};
+  var f = s.form, LV = {'초등학교':0, '중학교':6, '고등학교':9}, LM = {'초등학교':63, '중학교':448, '고등학교':3584};
+  if(!f) return;
+  function fit(){
+    var b = f.querySelector('[name="지점"]'), m = b ? GR[b.value] : null, cs = f.querySelectorAll('.subject-checks input'), all = 0, i, o, c, ok;
+    if(m) for(i = 0; i < cs.length; i++) all |= m[cs[i].value] || 0;
+    if(!all) m = null;
+    for(i = 0; i < s.options.length; i++){ o = s.options[i]; o.disabled = !!m && LM[o.value] > 0 && !(all & LM[o.value]); }
+    o = s.options[s.selectedIndex];
+    if(o && o.disabled){ s.value = ''; g.innerHTML = '<option value="">-</option>'; g.disabled = true; }
+    var lv = LV[s.value];
+    for(i = 1; i < g.options.length; i++){ o = g.options[i]; o.disabled = !!m && lv != null && !(all & (1 << (lv + parseInt(o.value, 10) - 1))); }
+    o = g.options[g.selectedIndex];
+    if(o && o.disabled) g.value = '';
+    var want = lv == null ? 4095 : g.value ? 1 << (lv + parseInt(g.value, 10) - 1) : LM[s.value];
+    for(i = 0; i < cs.length; i++){
+      c = cs[i]; ok = !m || !!((m[c.value] || 0) & want);
+      c.disabled = !ok; if(!ok) c.checked = false;
+      if(c.parentNode && c.parentNode.classList){ c.parentNode.classList.toggle('off', !ok); c.parentNode.classList.toggle('checked', c.checked); }
+    }
+  }
+  f.addEventListener('change', function(e){ if(e.target && e.target.tagName === 'SELECT') fit(); });
+  f.addEventListener('reset', function(){ setTimeout(fit, 0); });
+  fit();
 })();
 </script>
 <script>
