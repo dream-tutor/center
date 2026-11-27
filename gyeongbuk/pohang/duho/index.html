@@ -132,7 +132,7 @@
           <div class="info-label">수강 가능 과목 · 학년</div>
           <div class="info-value"><table class="subj-grade-table">
   <thead><tr><th>과목</th><th>수강 가능 학년</th></tr></thead>
-  <tbody><tr><td style="width:80px"><span class="subj-name subj-name-eng">🔤 영어</span></td><td><div class="grade-chips"><span class="grade-chip grade-chip-mid">중1</span><span class="grade-chip grade-chip-mid">중2</span><span class="grade-chip grade-chip-mid">중3</span><span class="grade-chip grade-chip-high">고1</span></div></td></tr><tr><td style="width:80px"><span class="subj-name subj-name-math">🔢 수학</span></td><td><div class="grade-chips"><span class="grade-chip grade-chip-elem">초4</span><span class="grade-chip grade-chip-elem">초5</span><span class="grade-chip grade-chip-elem">초6</span><span class="grade-chip grade-chip-mid">중1</span><span class="grade-chip grade-chip-mid">중2</span><span class="grade-chip grade-chip-mid">중3</span><span class="grade-chip grade-chip-high">고1</span><span class="grade-chip grade-chip-high">고2</span></div></td></tr></tbody>
+  <tbody><tr><td style="width:80px"><span class="subj-name subj-name-eng">🔤 영어</span></td><td><div class="grade-chips"><span class="grade-chip grade-chip-mid">중1</span><span class="grade-chip grade-chip-mid">중2</span><span class="grade-chip grade-chip-mid">중3</span><span class="grade-chip grade-chip-high">고1</span><span class="grade-chip grade-chip-high">고2</span></div></td></tr><tr><td style="width:80px"><span class="subj-name subj-name-math">🔢 수학</span></td><td><div class="grade-chips"><span class="grade-chip grade-chip-elem">초6</span><span class="grade-chip grade-chip-mid">중1</span><span class="grade-chip grade-chip-mid">중2</span><span class="grade-chip grade-chip-mid">중3</span><span class="grade-chip grade-chip-high">고1</span><span class="grade-chip grade-chip-high">고2</span></div></td></tr></tbody>
 </table></div>
         </div>
       </div>
@@ -198,7 +198,7 @@
   <div style="text-align:center;margin-bottom:28px;">
     <div class="section-tag">학년별 맞춤 프로그램</div>
     <h2 class="section-title">학년에 맞춘 코칭</h2>
-    <p class="section-sub">초4부터 고2까지, 시기마다 필요한 공부를 챙깁니다.</p>
+    <p class="section-sub">초6부터 고2까지, 시기마다 필요한 공부를 챙깁니다.</p>
   </div>
   <div class="grade-grid">
     <div class="grade-card grade-elem">
@@ -365,7 +365,7 @@
 <section class="seo-content">
 <div class="seo-content-inner">
   <h2>포항시 두호동 자기주도학습 전문, 와와학습코칭센터 두호점</h2>
-<p><strong>와와학습코칭센터 두호점</strong>은 경북 포항시 두호동에 위치한 자기주도학습 전문 학원입니다. 영어 · 수학 수업을 진행하며, 초4부터 고2까지 학년별 맞춤 코칭을 제공합니다. 가까운 학교는 환호여중, 대도중, 두호고, 포여고 등입니다.</p>
+<p><strong>와와학습코칭센터 두호점</strong>은 경북 포항시 두호동에 위치한 자기주도학습 전문 학원입니다. 영어 · 수학 수업을 진행하며, 초6부터 고2까지 학년별 맞춤 코칭을 제공합니다. 가까운 학교는 환호여중, 대도중, 두호고, 포여고 등입니다.</p>
 </div>
 </section>
 
@@ -513,7 +513,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=docu
      고른 학년(학교급만 골랐으면 그 학교급)에 그 지점이 열지 않는 과목은 흐리게(.off) 한다. 지점이 안 정해졌으면 모두 그대로 연다.
      이미 고른 값이 막히면 그 값만 푼다. 허용 학년은 이 폼에 단추가 있는 과목으로만 센다(고를 과목이 없는 학년을 내주지 않게).
      GR = 지점 → 과목 → 여는 학년(초1=1 … 고3=2048). scripts/form_grade_filter_2026-11-25.cjs 가 assets/branches.json 에서 넣는다. */
-  var GR = {"두호점":{"영어":960,"수학":2040}};
+  var GR = {"두호점":{"영어":1984,"수학":2016}};
   var f = s.form, LV = {'초등학교':0, '중학교':6, '고등학교':9}, LM = {'초등학교':63, '중학교':448, '고등학교':3584};
   if(!f) return;
   function fit(){
