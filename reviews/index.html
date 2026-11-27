@@ -624,6 +624,13 @@ document.querySelectorAll('.reviews-filter button').forEach(function(btn){
   if(!s || !g || typeof BRANCHES === 'undefined') return;
   var SEQ = ['초1','초2','초3','초4','초5','초6','중1','중2','중3','고1','고2','고3'], MAP = {'국어':'grade_kor', '영어':'grade_eng', '수학':'grade_math', '사회':'grade_soc', '과학':'grade_sci'}, GR = {};
   BRANCHES.forEach(function(x){ var m = {}, k; for(k in MAP) String(x[MAP[k]] || '').split(',').forEach(function(v){ var j = SEQ.indexOf(v.trim()); if(j > -1) m[k] = (m[k] || 0) | (1 << j); }); GR[x.name] = m; });
+  /* 같은 자리 묶음(2026-11-27): 같은 시·도와 시·군·구 안에서 상표 꼬리 '(W+)'·'(글로리드)'를 뗀 이름이 같은 지점들은 근방에서 함께 수업한다.
+     그중 하나를 고르면 묶음 전체가 여는 과목·학년을 합쳐서 켜고 끈다. 접수되는 지점 이름은 고른 그대로다. */
+  (function(){
+    var cut = function(n){ return String(n).replace(/\((?:W\+|글로리드)\)$/, ''); }, by = {}, k;
+    BRANCHES.forEach(function(x){ k = x.region + '|' + x.district + '|' + cut(x.name); (by[k] = by[k] || []).push(x.name); });
+    for(k in by){ if(by[k].length < 2) continue; var u = {}; by[k].forEach(function(n){ for(var c in GR[n]) u[c] = (u[c] || 0) | GR[n][c]; }); by[k].forEach(function(n){ GR[n] = u; }); }
+  })();
   var f = s.form, LV = {'초등학교':0, '중학교':6, '고등학교':9}, LM = {'초등학교':63, '중학교':448, '고등학교':3584};
   if(!f) return;
   function fit(){

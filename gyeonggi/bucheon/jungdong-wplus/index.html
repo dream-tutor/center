@@ -312,6 +312,8 @@
       <div class="form-group" style="margin-bottom:18px;">
         <label class="form-label">희망 과목 <span style="color:red">*</span></label>
         <div class="subject-checks">
+          <label><input type="checkbox" name="과목" value="국어">국어</label>
+          <label><input type="checkbox" name="과목" value="영어">영어</label>
           <label><input type="checkbox" name="과목" value="수학">수학</label>
           <label><input type="checkbox" name="과목" value="과학">과학</label>
         </div>
@@ -515,8 +517,9 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=docu
   /* 지점에 맞춰 학년·과목 끄기(2026-11-25): 이 폼의 지점(숨은 칸이나 고른 지점)이 열지 않는 학교급·학년은 고를 수 없게 하고,
      고른 학년(학교급만 골랐으면 그 학교급)에 그 지점이 열지 않는 과목은 흐리게(.off) 한다. 지점이 안 정해졌으면 모두 그대로 연다.
      이미 고른 값이 막히면 그 값만 푼다. 허용 학년은 이 폼에 단추가 있는 과목으로만 센다(고를 과목이 없는 학년을 내주지 않게).
-     GR = 지점 → 과목 → 여는 학년(초1=1 … 고3=2048). scripts/form_grade_filter_2026-11-25.cjs 가 assets/branches.json 에서 넣는다. */
-  var GR = {"중동점(W+)":{"수학":2040,"과학":1984}};
+     GR = 지점 → 과목 → 여는 학년(초1=1 … 고3=2048). scripts/form_grade_filter_2026-11-25.cjs 가 assets/branches.json 에서 넣는다.
+     같은 자리 묶음(2026-11-27): 같은 자리의 와와·더블유플러스·글로리드 지점은 근방에서 함께 수업하므로 묶음 전체가 여는 과목·학년을 합쳐 넣었다. 접수되는 지점 이름은 그대로다. */
+  var GR = {"중동점(W+)":{"국어":2040,"영어":2040,"수학":2040,"과학":1984}};
   var f = s.form, LV = {'초등학교':0, '중학교':6, '고등학교':9}, LM = {'초등학교':63, '중학교':448, '고등학교':3584};
   if(!f) return;
   function fit(){

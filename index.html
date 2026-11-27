@@ -1766,27 +1766,31 @@ wcs_do(_nasa)
    자료는 branches.js 의 grade_* 칸(scripts/form_grade_filter_2026-11-25.cjs). */
 (function () {
   var MAP = { "국어": "grade_kor", "영어": "grade_eng", "수학": "grade_math", "사회": "grade_soc", "과학": "grade_sci" };
-  function subjectsOf(name) {
+  /* 같은 자리 묶음(2026-11-27): 같은 시·도와 시·군·구 안에서 상표 꼬리 '(W+)'·'(글로리드)'를 뗀 이름이 같은 지점들은 근방에서 함께 수업한다.
+     그중 하나를 고르면 묶음 전체가 여는 과목·학년을 합쳐서 켜고 끈다. 묶음이 아니면 그 지점 하나다. 접수되는 지점 이름은 고른 그대로다. */
+  function groupOf(name) {
     if (!name || typeof BRANCHES === "undefined") return null;
-    var b = null;
-    for (var i = 0; i < BRANCHES.length; i++) { if (BRANCHES[i].name === name) { b = BRANCHES[i]; break; } }
+    var cut = function (n) { return String(n).replace(/\((?:W\+|글로리드)\)$/, ""); }, b = null, out = [], i;
+    for (i = 0; i < BRANCHES.length; i++) { if (BRANCHES[i].name === name) { b = BRANCHES[i]; break; } }
     if (!b) return null;
+    for (i = 0; i < BRANCHES.length; i++) { if (BRANCHES[i].region === b.region && BRANCHES[i].district === b.district && cut(BRANCHES[i].name) === cut(name)) out.push(BRANCHES[i]); }
+    return out;
+  }
+  function subjectsOf(name) {
+    var g = groupOf(name);
+    if (!g) return null;
     var out = [];
-    for (var k in MAP) { if (String(b[MAP[k]] || "").trim()) out.push(k); }
+    for (var k in MAP) { for (var i = 0; i < g.length; i++) { if (String(g[i][MAP[k]] || "").trim()) { out.push(k); break; } } }
     return out;
   }
   var SEQ = ["초1", "초2", "초3", "초4", "초5", "초6", "중1", "중2", "중3", "고1", "고2", "고3"];
   var LV = { "초등학교": 0, "중학교": 6, "고등학교": 9 }, LM = { "초등학교": 63, "중학교": 448, "고등학교": 3584 };
-  /* 과목 → 여는 학년(초1=1 … 고3=2048) */
+  /* 과목 → 여는 학년(초1=1 … 고3=2048). 묶음이면 묶음 합집합 */
   function masksOf(name) {
-    if (!name || typeof BRANCHES === "undefined") return null;
-    for (var i = 0; i < BRANCHES.length; i++) {
-      if (BRANCHES[i].name !== name) continue;
-      var b = BRANCHES[i], m = {};
-      for (var k in MAP) String(b[MAP[k]] || "").split(",").forEach(function (v) { var j = SEQ.indexOf(v.trim()); if (j > -1) m[k] = (m[k] || 0) | (1 << j); });
-      return m;
-    }
-    return null;
+    var g = groupOf(name), m = {};
+    if (!g) return null;
+    g.forEach(function (b) { for (var k in MAP) String(b[MAP[k]] || "").split(",").forEach(function (v) { var j = SEQ.indexOf(v.trim()); if (j > -1) m[k] = (m[k] || 0) | (1 << j); }); });
+    return m;
   }
   /* 허용 학년은 단추가 보이는 과목으로만 센다(숨긴 과목은 0) */
   function fitGrades(name, box, sc, gd) {

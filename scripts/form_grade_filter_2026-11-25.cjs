@@ -21,6 +21,13 @@
 //   폼 스크립트만 바뀌므로 data-iso·사이트맵 lastmod 는 올리지 않는다. 줄끝(CRLF/LF)은 파일마다 원래대로.
 //   생성기(git 밖 와와(wawacenter.kr) 의 _gen_dong.py·scripts/build_extra_pages.py·generate_pages.py)는 고치지 않았다 — 페이지를 다시 만들면
 //   이 스크립트를 다시 돌린다(scripts/_README.md).
+// 2026-11-27 — 같은 자리의 와와·더블유플러스·글로리드 묶음 (사장님 11-27 "더블유플러스와 글로리드는 근방에서 수업이 가능한 내용이라 과목 선정할 때
+//   와와 더블유플러스 글로리드 같이 있으면 해당 과목들은 다 열리게 해줘").
+//   묶음 = 같은 시·도와 시·군·구 안에서 상표 꼬리 '(W+)'·'(글로리드)'를 뗀 이름이 같은 지점이 둘 이상인 것. 이름을 표로 박지 않고 자료에서 센다
+//   (2026-11-27 자료로 8묶음 18곳). 묶음에 든 지점은 폼이 켜고 끄는 기준을 묶음 전체의 합집합으로 한다(과목마다 여는 학년을 합침): 하위 페이지는 GR 의
+//   그 지점 값, 홈·후기 창은 branches.js 를 읽는 셈. 묶음이 아닌 지점은 전과 같다. 보내는 지점 이름·키·값, 지점 고르기 목록, 본문의 과목·학년 표기는 그대로다.
+//   묶음 과목 단추를 더하는 일(폼 HTML)은 form_brand_group_2026-11-27.cjs 가 하고, 그 스크립트가 이 파일의 틀·셈을 불러 쓴다
+//   (require 로 불리면 페이지를 훑지 않고 함수만 내준다). 이 스크립트만 돌려도 묶음 합집합으로 다시 계산한다.
 // 사용: node scripts/form_grade_filter_2026-11-25.cjs             → 바뀔 곳만 세어 보여 준다(아무것도 안 씀)
 //       node scripts/form_grade_filter_2026-11-25.cjs --write     → 이 저장소 html 을 다시 쓴다
 //       --list <파일>   바뀔(바뀐) 페이지 목록을 그 파일에 쓴다     --plan <파일>  페이지별 지점·막히는 학교급·학년·과목 표(TSV)
@@ -66,6 +73,36 @@ function masksOf(name) {
   }
   return m;
 }
+
+// ── 같은 자리의 와와·더블유플러스·글로리드 묶음(2026-11-27) ─────────────────────────────────
+//   같은 시·도와 시·군·구 안에서 상표 꼬리를 뗀 이름이 같은 지점이 둘 이상이면 한 묶음이다(근방에서 함께 수업). '(모두)'처럼 다른 꼬리는 떼지 않는다.
+//   홈·후기 창에 넣는 페이지 스크립트(groupOf 등)도 같은 규칙을 branches.js 의 region·district·name 으로 센다.
+const BRAND_TAIL = /\((?:W\+|글로리드)\)$/;
+const GROUPS = (() => {
+  const by = new Map();
+  for (const n of Object.keys(DATA)) {
+    const k = [DATA[n].region, DATA[n].district, n.replace(BRAND_TAIL, '')].join('|');
+    if (!by.has(k)) by.set(k, []);
+    by.get(k).push(n);
+  }
+  const g = {};
+  for (const v of by.values()) if (v.length > 1) for (const n of v) g[n] = v;
+  return g;
+})();
+// 폼이 켜고 끄는 기준: 묶음이면 묶음 전체의 합집합(과목마다 여는 학년을 합침), 아니면 그 지점 그대로
+function groupMasksOf(name) {
+  const own = masksOf(name);
+  if (!own || !GROUPS[name]) return own;
+  const m = {};
+  for (const s of SUBJ) {
+    let v = 0;
+    for (const n of GROUPS[name]) v |= masksOf(n)[s] || 0;
+    if (v) m[s] = v;
+  }
+  return m;
+}
+// 묶음 때문에 그 지점 하나일 때보다 넓어진 지점인가
+const widened = (name) => !!GROUPS[name] && JSON.stringify(groupMasksOf(name)) !== JSON.stringify(masksOf(name));
 
 // ── ① 하위 페이지 학년 칸 스크립트 ───────────────────────────────────────────
 const ORIG_HEAD = [
@@ -125,7 +162,14 @@ const NOTE = [
   '     GR = 지점 → 과목 → 여는 학년(초1=1 … 고3=2048). scripts/form_grade_filter_2026-11-25.cjs 가 assets/branches.json 에서 넣는다. */',
 ];
 const FIT_N = fitLines("f.querySelector('[name=\"지점\"]')");
-const newN = (grJson) => [...ORIG_HEAD, ...NOTE, `  var GR = ${grJson};`, ...FIT_N, ...ORIG_TAIL].join('\n');
+// 묶음 합집합이 든 폼에만 설명 한 줄을 더 붙인다(2026-11-27). 표시(MARK)부터 */ 까지를 주석으로 알아보므로 두 꼴 다 인식된다.
+const MARK_G = '같은 자리 묶음(2026-11-27)';
+const NOTE_G = [
+  ...NOTE.slice(0, 3),
+  NOTE[3].replace(/ \*\/$/, ''),
+  `     ${MARK_G}: 같은 자리의 와와·더블유플러스·글로리드 지점은 근방에서 함께 수업하므로 묶음 전체가 여는 과목·학년을 합쳐 넣었다. 접수되는 지점 이름은 그대로다. */`,
+];
+const newN = (grJson, grouped) => [...ORIG_HEAD, ...(grouped ? NOTE_G : NOTE), `  var GR = ${grJson};`, ...FIT_N, ...ORIG_TAIL].join('\n');
 const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const eolRe = (s) => s.split('\n').map(escRe).join('\\r?\\n');
 // 원래 꼴과 이 스크립트가 쓴 꼴을 다 알아본다(줄끝은 CRLF·LF 둘 다). 쓴 꼴의 설명 주석은 글이 바뀌어도 알아보게 표시(MARK)부터 */ 까지로 잡는다.
@@ -175,7 +219,7 @@ const HOME_OLD = [
   '})();',
   '</script>',
 ].join('\n');
-const HOME_NEW = [
+const HOME_V1 = [
   '<script>',
   '/* 지점 선택 시 해당 지점 미개설 과목 숨김 — 지점 페이지와 동일 규칙',
   `   ${MARK}: 고른 지점이 열지 않는 학교급·학년도 고를 수 없게 하고, 고른 학년(학교급만 골랐으면 그 학교급)에`,
@@ -256,6 +300,65 @@ const HOME_NEW = [
   '})();',
   '</script>',
 ].join('\n');
+// 2026-11-27: 고른 지점이 묶음에 들면 묶음 전체로 센다 — 2026-11-25 꼴(HOME_V1)에서 subjectsOf·masksOf 두 덩어리만 바꾼 것이 지금 꼴(HOME_NEW)이다.
+const HOME_SUBJ_V1 = [
+  '  function subjectsOf(name) {',
+  '    if (!name || typeof BRANCHES === "undefined") return null;',
+  '    var b = null;',
+  '    for (var i = 0; i < BRANCHES.length; i++) { if (BRANCHES[i].name === name) { b = BRANCHES[i]; break; } }',
+  '    if (!b) return null;',
+  '    var out = [];',
+  '    for (var k in MAP) { if (String(b[MAP[k]] || "").trim()) out.push(k); }',
+  '    return out;',
+  '  }',
+].join('\n');
+const HOME_SUBJ_G = [
+  `  /* ${MARK_G}: 같은 시·도와 시·군·구 안에서 상표 꼬리 '(W+)'·'(글로리드)'를 뗀 이름이 같은 지점들은 근방에서 함께 수업한다.`,
+  '     그중 하나를 고르면 묶음 전체가 여는 과목·학년을 합쳐서 켜고 끈다. 묶음이 아니면 그 지점 하나다. 접수되는 지점 이름은 고른 그대로다. */',
+  '  function groupOf(name) {',
+  '    if (!name || typeof BRANCHES === "undefined") return null;',
+  '    var cut = function (n) { return String(n).replace(/\\((?:W\\+|글로리드)\\)$/, ""); }, b = null, out = [], i;',
+  '    for (i = 0; i < BRANCHES.length; i++) { if (BRANCHES[i].name === name) { b = BRANCHES[i]; break; } }',
+  '    if (!b) return null;',
+  '    for (i = 0; i < BRANCHES.length; i++) { if (BRANCHES[i].region === b.region && BRANCHES[i].district === b.district && cut(BRANCHES[i].name) === cut(name)) out.push(BRANCHES[i]); }',
+  '    return out;',
+  '  }',
+  '  function subjectsOf(name) {',
+  '    var g = groupOf(name);',
+  '    if (!g) return null;',
+  '    var out = [];',
+  '    for (var k in MAP) { for (var i = 0; i < g.length; i++) { if (String(g[i][MAP[k]] || "").trim()) { out.push(k); break; } } }',
+  '    return out;',
+  '  }',
+].join('\n');
+const HOME_MASK_V1 = [
+  '  /* 과목 → 여는 학년(초1=1 … 고3=2048) */',
+  '  function masksOf(name) {',
+  '    if (!name || typeof BRANCHES === "undefined") return null;',
+  '    for (var i = 0; i < BRANCHES.length; i++) {',
+  '      if (BRANCHES[i].name !== name) continue;',
+  '      var b = BRANCHES[i], m = {};',
+  '      for (var k in MAP) String(b[MAP[k]] || "").split(",").forEach(function (v) { var j = SEQ.indexOf(v.trim()); if (j > -1) m[k] = (m[k] || 0) | (1 << j); });',
+  '      return m;',
+  '    }',
+  '    return null;',
+  '  }',
+].join('\n');
+const HOME_MASK_G = [
+  '  /* 과목 → 여는 학년(초1=1 … 고3=2048). 묶음이면 묶음 합집합 */',
+  '  function masksOf(name) {',
+  '    var g = groupOf(name), m = {};',
+  '    if (!g) return null;',
+  '    g.forEach(function (b) { for (var k in MAP) String(b[MAP[k]] || "").split(",").forEach(function (v) { var j = SEQ.indexOf(v.trim()); if (j > -1) m[k] = (m[k] || 0) | (1 << j); }); });',
+  '    return m;',
+  '  }',
+].join('\n');
+// 덩어리가 꼭 한 번 나와야 바꾼다
+function swapOnce(text, from, to, what) {
+  if (text.split(from).length !== 2) fail(`${what}: 바꿀 덩어리가 한 번 나오지 않음`);
+  return text.replace(from, () => to);
+}
+const HOME_NEW = swapOnce(swapOnce(HOME_V1, HOME_SUBJ_V1, HOME_SUBJ_G, '홈 subjectsOf'), HOME_MASK_V1, HOME_MASK_G, '홈 masksOf');
 
 // ── ③ 후기 페이지 상담 창 ─────────────────────────────────────────────────
 const REV_OLD = [
@@ -282,7 +385,7 @@ const REV_OLD = [
   '  });',
   '})();',
 ].join('\n');
-const REV_NEW = [
+const REV_V1 = [
   REV_OLD,
   '',
   `/* ${MARK}: 아래 '신청 지점 선택'(#r-branch)에서 고른 지점이 열지 않는 학교급·학년은 고를 수 없게 하고,`,
@@ -296,6 +399,19 @@ const REV_NEW = [
   ...fitLines("document.getElementById('r-branch')"),
   '})();',
 ].join('\n');
+// 2026-11-27: 지점마다 센 GR 을 묶음끼리 합친다 — 2026-11-25 꼴(REV_V1)의 GR 만드는 줄 뒤에 한 덩어리를 더한 것이 지금 꼴(REV_NEW)이다.
+const REV_GR_V1 = "  BRANCHES.forEach(function(x){ var m = {}, k; for(k in MAP) String(x[MAP[k]] || '').split(',').forEach(function(v){ var j = SEQ.indexOf(v.trim()); if(j > -1) m[k] = (m[k] || 0) | (1 << j); }); GR[x.name] = m; });";
+const REV_GR_G = [
+  REV_GR_V1,
+  `  /* ${MARK_G}: 같은 시·도와 시·군·구 안에서 상표 꼬리 '(W+)'·'(글로리드)'를 뗀 이름이 같은 지점들은 근방에서 함께 수업한다.`,
+  '     그중 하나를 고르면 묶음 전체가 여는 과목·학년을 합쳐서 켜고 끈다. 접수되는 지점 이름은 고른 그대로다. */',
+  '  (function(){',
+  "    var cut = function(n){ return String(n).replace(/\\((?:W\\+|글로리드)\\)$/, ''); }, by = {}, k;",
+  "    BRANCHES.forEach(function(x){ k = x.region + '|' + x.district + '|' + cut(x.name); (by[k] = by[k] || []).push(x.name); });",
+  '    for(k in by){ if(by[k].length < 2) continue; var u = {}; by[k].forEach(function(n){ for(var c in GR[n]) u[c] = (u[c] || 0) | GR[n][c]; }); by[k].forEach(function(n){ GR[n] = u; }); }',
+  '  })();',
+].join('\n');
+const REV_NEW = swapOnce(REV_V1, REV_GR_V1, REV_GR_G, '후기 GR');
 
 // ── 페이지 읽기 ───────────────────────────────────────────────────────────
 function walk(dir, out = []) {
@@ -375,49 +491,59 @@ function effectOf(m, facts) {
   return { lvOff, grOff, subjNever, subjSome, any: !!(lvOff.length || grOff.length || subjNever.length || subjSome.length) };
 }
 
-const changes = [];
 const plan = [];
 const stat = {};
 const bump = (k) => { stat[k] = (stat[k] || 0) + 1; };
 const missingNames = new Map();
-for (const f of walk(ROOT)) {
-  const r = rel(f);
-  const raw = fs.readFileSync(f, 'utf8');
+const countOf = (hay, needle) => hay.split(needle).length - 1;
+const crlfOf = (t) => t.replace(/\n/g, '\r\n');
+
+// ── 한 페이지: 폼 스크립트를 자료대로 맞춘 글을 돌려준다(바뀔 것이 없으면 받은 글 그대로) ────────────────
+//   form_brand_group_2026-11-27.cjs 도 이 함수를 부른다(묶음 과목 단추를 더한 글을 넘겨 스크립트를 다시 맞춘다).
+function fitPage(raw, r) {
   const kind = kindOf(r);
   let out = raw;
   if (kind === '홈') {
-    const nOld = raw.split(HOME_OLD).length - 1 + raw.split(HOME_OLD.replace(/\n/g, '\r\n')).length - 1;
-    const nNew = raw.split(HOME_NEW).length - 1 + raw.split(HOME_NEW.replace(/\n/g, '\r\n')).length - 1;
-    if (nOld + nNew !== 1) fail(`홈: wawaSyncSubjects 덩어리 ${nOld}+${nNew}곳`);
-    if (nOld) { const crlf = raw.includes(HOME_OLD.replace(/\n/g, '\r\n')); out = raw.replace(crlf ? HOME_OLD.replace(/\n/g, '\r\n') : HOME_OLD, () => withEol(crlf ? '\r\n' : '', HOME_NEW)); bump('홈 바뀜'); } else bump('홈 이미 반영');
+    // 원래 꼴(HOME_OLD)·2026-11-25 꼴(HOME_V1)·지금 꼴(HOME_NEW) 가운데 하나가 꼭 한 번 있어야 한다
+    const hit = [];
+    for (const v of [HOME_OLD, HOME_V1, HOME_NEW]) for (const t of [v, crlfOf(v)]) { const c = countOf(raw, t); if (c) hit.push({ v, t, c }); }
+    if (hit.length !== 1 || hit[0].c !== 1) fail(`홈: wawaSyncSubjects 덩어리 ${hit.map((x) => x.c).join('+') || 0}곳`);
+    if (hit[0].v !== HOME_NEW) { out = raw.replace(hit[0].t, () => (hit[0].t.includes('\r\n') ? crlfOf(HOME_NEW) : HOME_NEW)); bump('홈 바뀜'); } else bump('홈 이미 반영');
     plan.push([r, kind, '(BRANCHES)', '고른 지점 기준', '', '', ''].join('\t'));
   } else if (kind === '후기') {
-    const crlf = raw.includes(REV_OLD.replace(/\n/g, '\r\n'));
-    const O = crlf ? REV_OLD.replace(/\n/g, '\r\n') : REV_OLD, N = crlf ? REV_NEW.replace(/\n/g, '\r\n') : REV_NEW;
-    const nNew = raw.split(N).length - 1, nOld = raw.split(O).length - 1 - nNew;
-    if (nOld + nNew !== 1) fail(`후기: 학교-학년 연동 덩어리 ${nOld}+${nNew}곳`);
-    if (nOld) { out = raw.replace(O, () => N); bump('후기 바뀜'); } else bump('후기 이미 반영');
+    // 2026-11-25 꼴(REV_V1)과 지금 꼴(REV_NEW)은 원래 덩어리(REV_OLD)를 품고 있다. 그래서 뒤 판부터 센다
+    let cur = null, neu = null, n = 0;
+    for (const eol of [false, true]) {
+      const [o, v1, nw] = [REV_OLD, REV_V1, REV_NEW].map((t) => (eol ? crlfOf(t) : t));
+      const nNew = countOf(raw, nw), nV1 = countOf(raw, v1), nOld = countOf(raw, o) - nNew - nV1;
+      n += nNew + nV1 + nOld;
+      if (nNew + nV1 + nOld === 1) { cur = nNew ? nw : nV1 ? v1 : o; neu = nw; }
+    }
+    if (n !== 1 || !cur) fail(`후기: 학교-학년 연동 덩어리 ${n}곳`);
+    if (cur !== neu) { out = raw.replace(cur, () => neu); bump('후기 바뀜'); } else bump('후기 이미 반영');
     plan.push([r, kind, '(BRANCHES)', '고른 지점 기준', '', '', ''].join('\t'));
   } else {
     const hits = [...raw.matchAll(RE_N)];
-    if (!hits.length) { if (/var GRADES\b/.test(raw)) fail(`${r}: 학년 칸 스크립트 꼴이 다름`); if (/<form\b/.test(raw)) fail(`${r}: 폼은 있는데 학년 칸 스크립트가 없음`); continue; }
+    if (!hits.length) { if (/var GRADES\b/.test(raw)) fail(`${r}: 학년 칸 스크립트 꼴이 다름`); if (/<form\b/.test(raw)) fail(`${r}: 폼은 있는데 학년 칸 스크립트가 없음`); return raw; }
     if (hits.length !== 1) fail(`${r}: 학년 칸 스크립트 ${hits.length}곳`);
     const h = raw.replace(/\r\n/g, '\n');
     const facts = formFacts(h, r);
     if (!facts) fail(`${r}: consultForm 이 없음`);
     if (h.indexOf("var GRADES = {'초등학교'") < facts.formEnd) fail(`${r}: 학년 칸 스크립트가 폼보다 앞`);
-    // 이 폼의 지점들 → GR (자료 순서는 폼 선택지 순서, 과목은 국·영·수·사·과)
+    // 이 폼의 지점들 → GR (자료 순서는 폼 선택지 순서, 과목은 국·영·수·사·과). 묶음에 든 지점은 묶음 합집합(2026-11-27)
     const GR = {};
     const eff = [];
+    let grouped = false;
     for (const n of facts.names) {
-      const m = masksOf(n);
+      const m = groupMasksOf(n);
       if (!m) { missingNames.set(n, (missingNames.get(n) || 0) + 1); continue; }
+      if (widened(n)) grouped = true;
       const e = effectOf(m, facts);
       eff.push([n, e]);
       GR[n] = m;
     }
     const any = eff.some(([, e]) => e && e.any);
-    const want = any ? newN(JSON.stringify(GR)) : ORIG_N;
+    const want = any ? newN(JSON.stringify(GR), grouped) : ORIG_N;
     const cur = hits[0][0];
     const next = withEol(cur, want);
     if (cur !== next) out = raw.slice(0, hits[0].index) + next + raw.slice(hits[0].index + cur.length);
@@ -425,6 +551,7 @@ for (const f of walk(ROOT)) {
     if (any) {
       const fb = eff.filter(([, e]) => e && e.fallback).length;
       if (fb) bump(`  └ 단추 과목을 하나도 안 여는 지점(다 열어 둠) ${kind}`);
+      if (grouped) bump(`  └ 묶음 합집합이 든 폼(${kind})`);
       if (facts.hidden && facts.pre && eff[0] && eff[0][1] && eff[0][1].lvOff && eff[0][1].lvOff.includes(facts.pre)) bump(`  └ 미리 고른 학교급을 지점이 안 염(${kind})`);
       if (facts.hidden && facts.checked.length && eff[0] && eff[0][1] && eff[0][1].subjNever && facts.checked.some((s) => eff[0][1].subjNever.includes(s))) bump(`  └ 미리 누른 과목을 지점이 안 염(${kind})`);
     }
@@ -432,33 +559,44 @@ for (const f of walk(ROOT)) {
       eff.map(([n, e]) => (e && !e.fallback ? `${n}:학교급[${e.lvOff.join('·')}] 학년[${e.grOff.join('·')}] 안여는과목[${e.subjNever.join('·')}] 일부학년과목[${e.subjSome.join('·')}]` : `${n}:-`)).join(' / '),
       facts.subjects.join('·'), any ? '거름' : '그대로'].join('\t'));
   }
-  if (out !== raw) {
-    // 바꾼 인라인 스크립트가 문법에 맞는지
-    for (const m of out.matchAll(/<script>([\s\S]*?)<\/script>/g)) if (m[1].includes(MARK)) { try { new vm.Script(m[1]); } catch (e) { fail(`${r}: 스크립트 문법 오류 ${e.message}`); } }
-    // 스크립트 밖은 한 글자도 안 바뀌어야 한다
-    changes.push({ f, r, kind, raw, out });
-  }
+  // 바꾼 인라인 스크립트가 문법에 맞는지 (스크립트 밖은 한 글자도 안 바뀐다)
+  if (out !== raw) for (const m of out.matchAll(/<script>([\s\S]*?)<\/script>/g)) if (m[1].includes(MARK)) { try { new vm.Script(m[1]); } catch (e) { fail(`${r}: 스크립트 문법 오류 ${e.message}`); } }
+  return out;
 }
-const nonData = [...missingNames.keys()].filter((n) => n !== '일반문의');
-if (nonData.length) fail('자료에 없는 지점: ' + nonData.join(', '));
 
-console.log('페이지 종류별:');
-for (const [k, v] of Object.entries(stat).sort()) console.log(`  ${k}: ${v}`);
-const byKind = {};
-for (const c of changes) byKind[c.kind] = (byKind[c.kind] || 0) + 1;
-console.log(`바뀔 페이지 ${changes.length}장 ${JSON.stringify(byKind)} (폼 스크립트만 — 날짜는 그대로)`);
-if (missingNames.size) console.log('자료에 없는 지점 값(그대로 둠): ' + [...missingNames].map(([k, v]) => `${k} ${v}장`).join(', '));
-if (LIST) fs.writeFileSync(LIST, changes.map((c) => c.r).join('\n') + (changes.length ? '\n' : ''), 'utf8');
-if (PLAN) fs.writeFileSync(PLAN, ['경로\t종류\t지점\t지점 칸\t막히는 것(지점별)\t과목 단추\t결과', ...plan].join('\n') + '\n', 'utf8');
-if (EMIT) {
-  for (const s of SAMPLE) {
-    const c = changes.find((x) => x.r === s);
-    const src = c ? c.out : fs.readFileSync(path.join(ROOT, s), 'utf8');
-    const p = path.join(EMIT, s);
-    fs.mkdirSync(path.dirname(p), { recursive: true });
-    fs.writeFileSync(p, src, 'utf8');
+function main() {
+  const changes = [];
+  for (const f of walk(ROOT)) {
+    const r = rel(f);
+    const raw = fs.readFileSync(f, 'utf8');
+    const out = fitPage(raw, r);
+    if (out !== raw) changes.push({ f, r, kind: kindOf(r), raw, out });
   }
-  console.log(`→ 표본 ${SAMPLE.length}장을 ${EMIT} 에 썼습니다(저장소는 그대로).`);
+  const nonData = [...missingNames.keys()].filter((n) => n !== '일반문의');
+  if (nonData.length) fail('자료에 없는 지점: ' + nonData.join(', '));
+
+  console.log('페이지 종류별:');
+  for (const [k, v] of Object.entries(stat).sort()) console.log(`  ${k}: ${v}`);
+  const byKind = {};
+  for (const c of changes) byKind[c.kind] = (byKind[c.kind] || 0) + 1;
+  console.log(`바뀔 페이지 ${changes.length}장 ${JSON.stringify(byKind)} (폼 스크립트만 — 날짜는 그대로)`);
+  if (missingNames.size) console.log('자료에 없는 지점 값(그대로 둠): ' + [...missingNames].map(([k, v]) => `${k} ${v}장`).join(', '));
+  if (LIST) fs.writeFileSync(LIST, changes.map((c) => c.r).join('\n') + (changes.length ? '\n' : ''), 'utf8');
+  if (PLAN) fs.writeFileSync(PLAN, ['경로\t종류\t지점\t지점 칸\t막히는 것(지점별)\t과목 단추\t결과', ...plan].join('\n') + '\n', 'utf8');
+  if (EMIT) {
+    for (const s of SAMPLE) {
+      const c = changes.find((x) => x.r === s);
+      const src = c ? c.out : fs.readFileSync(path.join(ROOT, s), 'utf8');
+      const p = path.join(EMIT, s);
+      fs.mkdirSync(path.dirname(p), { recursive: true });
+      fs.writeFileSync(p, src, 'utf8');
+    }
+    console.log(`→ 표본 ${SAMPLE.length}장을 ${EMIT} 에 썼습니다(저장소는 그대로).`);
+  }
+  if (WRITE) { for (const c of changes) fs.writeFileSync(c.f, c.out, 'utf8'); console.log(`→ ${changes.length}개 파일을 썼습니다.`); }
+  else if (!EMIT) console.log('(모의 실행 — --write 를 붙이면 씁니다)');
 }
-if (WRITE) { for (const c of changes) fs.writeFileSync(c.f, c.out, 'utf8'); console.log(`→ ${changes.length}개 파일을 썼습니다.`); }
-else if (!EMIT) console.log('(모의 실행 — --write 를 붙이면 씁니다)');
+
+// 직접 돌리면 페이지를 훑고, require 로 불리면(form_brand_group_2026-11-27.cjs) 틀·셈만 내준다
+module.exports = { ROOT, DATA, SEQ, SUBJ, MARK, MARK_G, GROUPS, masksOf, groupMasksOf, widened, walk, rel, kindOf, formFacts, effectOf, fitPage, fail, stat, plan, missingNames };
+if (require.main === module) main();
